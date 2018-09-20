@@ -1,0 +1,22 @@
+{
+	"name": "ste",
+	"version": "0.0.0",
+	"description": "Space Time Explorer",
+	"main": "app.js",
+	"scripts": {
+		"start": "node app.js"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/jaacko-torus/STE.git"
+	},
+	"author": "jaackotorus",
+	"license": "unlicence",
+	"bugs": {
+		"url": "https://github.com/jaacko-torus/STE/issues"
+	},
+	"homepage": "https://github.com/jaacko-torus/STE#readme",
+	"dependencies": {
+		"express": "^4.16.3"
+	}
+}
