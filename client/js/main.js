@@ -1,42 +1,110 @@
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
+const Engine = Matter.Engine;
+const	Render = Matter.Render;
+const	Runner = Matter.Runner;
+const	Body   = Matter.Body;
+const	Events = Matter.Events;
+const	World  = Matter.World;
+const	Bodies = Matter.Bodies;
 
+// create engine
+const engine = Engine.create();
+const world  = engine.world;
 
-var ss = { // spaceship
-	x :  100,
-	y :  100,
-	s :   60,
-	r :    0,
-	c : "#ff0000"
-}
+// set gravity to 0
+engine.world.gravity.x = 0;
+engine.world.gravity.y = 0;
 
-function triangle(x, y, s, r, c, debug = false) {
-	// x, y, size, rotation, color
-	// size refers to diameter of encircling circle
-	let x1 = x + (s * Math.sin(r) / 2);
-	let y1 = y - (s * Math.cos(r) / 2);
+// create renderer
+const render = Render.create({
+	element : document.body,
+	engine  : engine,
+	options : {
+		width              : window.innerWidth,
+		height             : window.innerHeight,
+		showCollisions     : true,
+		showAngleIndicator : true
+	}
+});
+Render.run(render);
 
-	let x2 = x + (s * Math.sin(r - (2 * Math.PI / 3)) / 2);
-	let y2 = y - (s * Math.cos(r - (2 * Math.PI / 3)) / 2);
+// create runner
+const runner = Runner.create();
+Runner.run(runner, engine);
+
+class spaceship {
+	constructor(position, angle = Math.PI / 2) {
+		// size refers to the size of a single face of the triangle
+		this.size = 50;
+		
+		this.position = { x: position.x, y: position.y };
+		this.velocity = {};
+		
+		this.angle           =         angle;
+		this.angularSpeed    = Math.PI / 240;
+		
+		this.keys = {
+			left  : false,
+			up    : false,
+			right : false,
+			down  : false
+		}
+		
+		this.capsule = this.create_capsule();
+	}
+	// length refers to the radius of the circle circumscribed around said shape(this is done solely for matter.js)
+	get length() { return this.size * Math.sqrt(3) / 3 }
 	
-	let x3 = x + (s * Math.sin(r + (2 * Math.PI / 3)) / 2);
-	let y3 = y - (s * Math.cos(r + (2 * Math.PI / 3)) / 2);
+	get speed() {
+		let angle = this.angle;
+		return {
+			get x() { return -Math.cos(angle) },
+			get y() { return -Math.sin(angle) }
+		}
+	}
 
-	ctx.beginPath();
-	ctx.moveTo(x1,y1);
-	ctx.lineTo(x2,y2);
-	ctx.lineTo(x3,y3);
-	ctx.fillStyle = c;
-	ctx.fill();
+	create_capsule(options = {}) {
+		let capsule = Bodies.polygon(400, 100, 3, this.length, { angle: this.angle }, options);
+		World.add(world, capsule);
+		return capsule;
+	}
 
-	if(debug) {
-		ctx.setLineDash([5, 3]);
-		ctx.beginPath();
-		ctx.arc(x, y, s / 2, 0, 2 * Math.PI);
-		ctx.moveTo(x, y);
-		ctx.lineTo(x1, y1)
-		ctx.stroke();
+	update() {
+		// this.velocity
+		this.velocity = { x: this.capsule.velocity.x, y: this.capsule.velocity.y }
+		this.angle = this.capsule.angle;
+		this.angularVelocity = this.capsule.angularVelocity;
+		
+		if ( this.keys.left  ) { Body.setAngularVelocity(this.capsule, -this.angularSpeed);}
+		if ( this.keys.up    ) { Body.setVelocity(this.capsule, { x:  this.speed.x, y:  this.speed.y }); }
+		if ( this.keys.right ) { Body.setAngularVelocity(this.capsule,  this.angularSpeed);}
+		if ( this.keys.down  ) { Body.setVelocity(this.capsule, { x: -this.speed.x, y: -this.speed.y }); }
 	}
 }
 
-triangle(ss.x, ss.y, ss.s, ss.r, ss.c, true);
+let ss = new spaceship({ x: 150, y: 150 }, Math.PI / 2);
+
+document.addEventListener("keydown", (e) => {
+	if (e.key.toLowerCase() === "a" || e.key === "ArrowLeft"  ) { ss.keys.left  = true; }
+	if (e.key.toLowerCase() === "w" || e.key === "ArrowUp"    ) { ss.keys.up    = true; }
+	if (e.key.toLowerCase() === "d" || e.key === "ArrowRight" ) { ss.keys.right = true; }
+	if (e.key.toLowerCase() === "s" || e.key === "ArrowDown"  ) { ss.keys.down  = true; }
+});
+
+document.addEventListener("keyup", (e) => {
+	if (e.key.toLowerCase() === "a" || e.key === "ArrowLeft"  ) { ss.keys.left  = false; }
+	if (e.key.toLowerCase() === "w" || e.key === "ArrowUp"    ) { ss.keys.up    = false; }
+	if (e.key.toLowerCase() === "d" || e.key === "ArrowRight" ) { ss.keys.right = false; }
+	if (e.key.toLowerCase() === "s" || e.key === "ArrowDown"  ) { ss.keys.down  = false; }
+});
+
+let counter = 0;
+Events.on(engine, "beforeUpdate", (event) => { // update loop, 60fps, 60 counter = 1sec
+	counter += 1;
+	ss.update();
+});
+
+// fit the render viewport to the scene; camera
+Render.lookAt(render, {
+	min: { x: 0, y: 0 },
+	max: { x: 800, y: 600 }
+});
