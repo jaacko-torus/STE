@@ -69,9 +69,9 @@ class module {
 	static get constraints() {
 		let s = module.size;
 		return [
-			{ x:        - (3/4 * s/16), y:  (s*Math.sqrt(3)/3) - (3/4 * s*Math.sqrt(3)/16) },
-			{ x: -(s/2) - (3/4 * s/16), y: -(s*Math.sqrt(3)/6) - (3/4 * s*Math.sqrt(3)/16) },
-			{ x: -(s/2) - (3/2 * s/16), y:   s*Math.sqrt(3)/6                              }
+			{ x:        - (3/4 * s/16), y: -(s*Math.sqrt(3)/3) + (3/4 * s*Math.sqrt(3)/16) },
+			{ x: -(s/2) + (3/4 * s/16), y:  (s*Math.sqrt(3)/6) - (3/4 * s*Math.sqrt(3)/16) },
+			{ x: -(s/2) + (3/2 * s/16), y:   s*Math.sqrt(3)/6                              }
 		];
 	}
 
@@ -188,14 +188,17 @@ ss.mod3 = new module("[0,0,1]", {
 	y: ss.capsule.position.y - (module.size * Math.sqrt(12) / 12)
 }, 3 * Math.PI / 2);
 
-ss.constraint = Constraint.create({
-	bodyA  : capsules[ss.capsule.id],
-	pointA : { x: 0, y: 0 },
-	bodyB  : modules[ss.mod2.id],
-	pointB : { x: 0, y: 0 }
+ss.c1 = Constraint.create({
+	bodyA  : capsules[ss.capsule.id] , pointA : { x: -module.constraints[0].x, y:  module.constraints[0].y },
+	bodyB  : modules[ss.mod2.id]     , pointB : { x:  module.constraints[1].x, y: -module.constraints[1].y }
 });
 
-World.add(world, ss.constraint);
+ss.c2 = Constraint.create({
+	bodyA  : capsules[ss.capsule.id] , pointA : { x: -module.constraints[1].x, y:  module.constraints[1].y },
+	bodyB  : modules[ss.mod2.id]     , pointB : { x:  module.constraints[0].x, y: -module.constraints[0].y }
+});
+
+World.add(world, [ss.c1, ss.c2]);
 
 // --------------------------------------------------------------------------------------------------------------------
 /* -- input events & loop -- */
