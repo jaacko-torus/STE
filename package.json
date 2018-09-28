@@ -1,6 +1,6 @@
 {
 	"name": "ste",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "Space Time Explorer",
 	"main": "app.js",
 	"scripts": {
