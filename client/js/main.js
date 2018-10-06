@@ -42,17 +42,20 @@ Runner.run(runner, engine);
 
 let universe = {};
 universe.modules = new Map();
+universe.capsules = new Map();
+universe.users = {}; // useless rn
+universe.spaceships = new Map();
 
 // spaceship - includes capsule, synonimous with "user"
 class module {
-	constructor(owner, id, position, angle = Math.PI / 2) {
+	constructor(owner, id, {x, y, d}, angle = Math.PI / 2) {
 		this.owner = owner;
 
-		this.position     = { x: position.x, y:   position.y };
-		this.velocity     = { x:          0, y:            0 };
+		this.position     = { x, y, d };
+		this.velocity     = { x: 0, y: 0 };
 
 		this.angle        = (         angle );
-		this.angularSpeed = ( Math.PI / 240 );
+		this.angularSpeed = ( Math.PI / 900 );
 		
 		this.module = module.create(this);
 		module.add_to_list(universe.modules, id, this);
@@ -68,13 +71,20 @@ class module {
 	
 	// size refers to the size of a single face of the triangle
 	static get size() { return 50; }
-	static get length() { return module.size * Math.sqrt(3) / 3 }
+	static get height() { return module.size * Math.sqrt(3) / 2; }
+	static get length() { return module.size * Math.sqrt(3) / 3; }
 	static get constraints() {
 		let s = module.size;
+		// return [
+		// 	{ x:        - (3/4 * s/16), y: -(s*Math.sqrt(3)/3) + (3/4 * s*Math.sqrt(3)/16) },
+		// 	{ x: -(s/2) + (3/4 * s/16), y:  (s*Math.sqrt(3)/6) - (3/4 * s*Math.sqrt(3)/16) },
+		// 	{ x: -(s/2) + (3/2 * s/16), y:   s*Math.sqrt(3)/6                              }
+		// ];
+
 		return [
-			{ x:        - (3/4 * s/16), y: -(s*Math.sqrt(3)/3) + (3/4 * s*Math.sqrt(3)/16) },
-			{ x: -(s/2) + (3/4 * s/16), y:  (s*Math.sqrt(3)/6) - (3/4 * s*Math.sqrt(3)/16) },
-			{ x: -(s/2) + (3/2 * s/16), y:   s*Math.sqrt(3)/6                              }
+			{ x: -(   s/8 ), y:  (s*Math.sqrt(3)/3) - (s*Math.sqrt(3)/8) },
+			{ x: -( 3*s/8 ), y: -(s*Math.sqrt(3)/6) + (s*Math.sqrt(3)/8) },
+			{ x: -(   s/4 ), y: -(s*Math.sqrt(3)/8) }
 		];
 	}
 	
@@ -88,7 +98,7 @@ class module {
 
 	static update() {
 		universe.modules.forEach((mod_value, id_key) => {
-			mod_value.position = { x: mod_value.module.position.x, y: mod_value.module.position.y };
+			mod_value.position = { x: mod_value.module.position.x, y: mod_value.module.position.y, d: mod_value.position.d };
 			mod_value.velocity = { x: mod_value.module.velocity.x, y: mod_value.module.velocity.y };
 
 			mod_value.angle           = mod_value.module.angle;
@@ -100,11 +110,12 @@ class module {
 
 // capsules
 
-universe.capsules = new Map();
 
 class capsule extends module {
 	constructor(owner, id, position, angle) {
+
 		super(owner, id, position, angle);
+		// console.log(position.y);
 
 		this.keys = {
 			left  : false,
@@ -119,10 +130,16 @@ class capsule extends module {
 	get speed() { return super.speed; }
 	
 	static event_handler(mod_value) {
-		if ( mod_value.keys.left  ) { Body.setAngularVelocity(mod_value.module, -mod_value.angularSpeed); }
-		if ( mod_value.keys.up    ) { Body.setVelocity(mod_value.module, { x:  mod_value.speed.x, y:  mod_value.speed.y }); }
-		if ( mod_value.keys.right ) { Body.setAngularVelocity(mod_value.module,  mod_value.angularSpeed); }
-		if ( mod_value.keys.down  ) { Body.setVelocity(mod_value.module, { x: -mod_value.speed.x, y: -mod_value.speed.y }); }
+		let speed_x, speed_y;
+		// NOTE: torque will no longer be needed once basic thrusters are implemented
+		// NOTE: torque will be needed once directional thrusters are implemented
+		if(mod_value.position.d === 0) { speed_x = -mod_value.speed.x; speed_y = -mod_value.speed.y; }
+		if(mod_value.position.d === 1) { speed_x =  mod_value.speed.x; speed_y =  mod_value.speed.y; }
+
+		if( mod_value.keys.left  ) { mod_value.module.torque = -mod_value.angularSpeed }
+		if( mod_value.keys.up    ) { mod_value.module.force = { x:  speed_x/8000, y:  speed_y/8000 }; }
+		if( mod_value.keys.right ) { mod_value.module.torque =  mod_value.angularSpeed }
+		if( mod_value.keys.down  ) { mod_value.module.force = { x: -speed_x/8000, y: -speed_y/8000 }; }
 	}
 	
 	static update() {
@@ -136,73 +153,112 @@ class capsule extends module {
 
 
 // spaceship
-universe.users = {};
-universe.spaceships = new Map();
+
 
 class spaceship {
-	constructor(owner, id, position, cap = "main", mods = [], angle = Math.PI / 2) {
+	constructor(owner, id, position, cap = "main", mods = [], angle = 3 * Math.PI / 2) {
+		if(position.d === 0) { angle = 3 * Math.PI / 2; } else
+		if(position.d === 1) { angle =     Math.PI / 2; }
+
 		// in the spaceship class, owner refer to the user
 		this.owner = owner;
 
-		this.position = { x: position.x, y: position.y };
+		this.position = { x: position.x, y: position.y, d: position.d };
+		this.angle = angle;
 
-		this.capsule = new capsule(id, cap, this.position);
+		this.capsule = {};
 		this.modules = {};
-
-		this.add_modules(id, mods, position);
-
-		universe.spaceships[id] = this;
+		
+		this.add_modules(id, cap, mods, this.position);
+		module.add_to_list(universe.spaceships, id, this);
 	}
+	
+	add_modules(owner, cap, mods, position) {
+		// first add the capsule
+		let cap_coords = spaceship.cap_coords;
+		let coords = spaceship.coords( position, spaceship.tri_to_sqr_coords( position.d, cap_coords[0], cap_coords[1], cap_coords[2] ) );
+		console.log(coords);
+		this.capsule = new capsule(owner, cap, { x: coords.x, y: coords.y, d: coords.d }, coords.angle);
 
-	add_modules(owner, mods, position) {
+		// then add all other modules
 		for(let i = 0; i < mods.length; i++) {
 			let id = mods[i].toString();
 			let coords = spaceship.coords( position, spaceship.tri_to_sqr_coords( position.d, mods[i][0], mods[i][1], mods[i][2] ) );
-			this.modules[id] = new module(owner, id, { x: coords.x, y: coords.y }, coords.angle);
+			console.log(coords);
+			this.modules[id] = new module(owner, id, { x: coords.x, y: coords.y, d: coords.d }, coords.angle);
 		}
 	}
+
+	static get cap_coords() { return [  0,  0,  0 ]; }
 
 	// origin_d represents direction of main or capsule which can be either 0, or 1;
 	// while output d is the orientation of module given it's coords and origin_d
 	static tri_to_sqr_coords(origin_d, x, y, z) {
-		if(origin_d === 0) { origin_d =  1; } else
-		if(origin_d === 1) { origin_d = -1; } else
-		{ return "please enter a correct position parameter"; }
+		// NOTE: simplify if-elses by checking position parameter before entering the equation
+		console.log({x, y, z});
+		if(origin_d === 0) { origin_d = -1; } else
+		if(origin_d === 1) { origin_d =  1; } else
+		{ return console.log("please enter a correct position parameter"); }
 
-		x = z-x;
-		y = origin_d * y;
+		x = z - x;
+		y = -origin_d * y;
 		
-		if(origin_d ===  1) { origin_d = 2; } else
-		if(origin_d === -1) { origin_d = 1; }
-
+		if(origin_d ===  1) { origin_d = 1; } else
+		if(origin_d === -1) { origin_d = 2; }
+		
 		let d = (x % 2 + origin_d) % 2;
-
+		// let d = (y % 2 + origin_d) % 2;
+		console.log({x, y})
 		return { x, y, d };
 	}
 
-	static coords(position, sqr_coords) {
-		let angle;
-		if(sqr_coords.d === 0) { angle =   Math.PI / 2; sqr_coords.d =  module.size * Math.sqrt(12) / 12; } else
-		if(sqr_coords.d === 1) { angle = 3*Math.PI / 2; sqr_coords.d = -module.size * Math.sqrt(12) / 12; } else
-		{ console.log("please use a correct orientation"); }
+	static coords(origin, sqr_coords) {
+		let angle, y_offset = (module.size * Math.sqrt(12) / 12) / 2;
+		
+		if(sqr_coords.d === 0) { angle = 3 * Math.PI / 2; y_offset *= -1; } else
+		if(sqr_coords.d === 1) { angle =     Math.PI / 2; y_offset *=  1; }
+		
+		let x = origin.x + ( (module.size / 2) * sqr_coords.x );
+		let y = origin.y - (  module.height    * sqr_coords.y ) + y_offset;
 
-		let x = position.x + sqr_coords.x * (module.size / 2);
-		let y = position.y + sqr_coords.y + sqr_coords.d;
-
-		return { x, y, angle };
+		return { x, y, d: sqr_coords.d, angle };
 	}
 }
 
+
+
+
 let ss = new spaceship(
-	"jaacko",
+	"jaacko0",
 	"ss0",
-	{ x: 200, y: 300, d: 0 },
+	{ x: 200, y: 300, d: 1 },
 	"cap0",
 	[
+		// testing x
+		[  0,  0,  1 ],
 		[  1,  0,  0 ],
-		[  0,  0,  1 ]
+		[  1,  0, -1 ],
+		[  1,  0, -2 ],
+		[  2,  0, -2 ],
+
+		// testing y
+		// [ -1, -1, -1 ],
+		[  0,  1,  0 ],
+		[  0,  1, -1 ],
+		// [  2,  2,  2 ]
 	]
 );
+
+// let hs = new spaceship(
+// 	"jaacko1",
+// 	"ss1",
+// 	{ x: 150, y: 200, d: 0 },
+// 	"cap1",
+// 	[
+// 		[  1,  0,  0 ],
+// 		[  0,  0,  1 ]
+// 	]
+// );
 
 // --------------------------------------------------------------------------------------------------------------------
 /* -- Making new objects -- */
@@ -247,19 +303,24 @@ let ss = new spaceship(
 /* -- input events & loop -- */
 
 
-document.addEventListener("keydown", (e) => {
-	if (e.key.toLowerCase() === "a" || e.key === "ArrowLeft"  ) { ss.capsule.keys.left  = true; }
-	if (e.key.toLowerCase() === "w" || e.key === "ArrowUp"    ) { ss.capsule.keys.up    = true; }
-	if (e.key.toLowerCase() === "d" || e.key === "ArrowRight" ) { ss.capsule.keys.right = true; }
-	if (e.key.toLowerCase() === "s" || e.key === "ArrowDown"  ) { ss.capsule.keys.down  = true; }
-});
+function add_keyboard_events() {
+	let ake = (key_dir) => {
+		document.addEventListener(key_dir, (e) => {
+			if( key_dir === "keydown" ) { key_dir =  true; }
+			if( key_dir === "keyup"   ) { key_dir = false; }
+			
+			if (e.key.toLowerCase() === "w" || e.key === "ArrowUp"    ) { ss.capsule.keys.up    = key_dir; }
+			if (e.key.toLowerCase() === "a" || e.key === "ArrowLeft"  ) { ss.capsule.keys.left  = key_dir; }
+			if (e.key.toLowerCase() === "d" || e.key === "ArrowRight" ) { ss.capsule.keys.right = key_dir; }
+			if (e.key.toLowerCase() === "s" || e.key === "ArrowDown"  ) { ss.capsule.keys.down  = key_dir; }
+		});
+	}
 
-document.addEventListener("keyup", (e) => {
-	if (e.key.toLowerCase() === "a" || e.key === "ArrowLeft"  ) { ss.capsule.keys.left  = false; }
-	if (e.key.toLowerCase() === "w" || e.key === "ArrowUp"    ) { ss.capsule.keys.up    = false; }
-	if (e.key.toLowerCase() === "d" || e.key === "ArrowRight" ) { ss.capsule.keys.right = false; }
-	if (e.key.toLowerCase() === "s" || e.key === "ArrowDown"  ) { ss.capsule.keys.down  = false; }
-});
+	ake("keydown");
+	ake("keyup");
+}
+
+add_keyboard_events();
 
 let counter = 0;
 Events.on(engine, "beforeUpdate", (event) => { // update loop, 60fps, 60 counter = 1sec
@@ -274,6 +335,6 @@ Events.on(engine, "beforeUpdate", (event) => { // update loop, 60fps, 60 counter
 
 // fit the render viewport to the scene; camera
 Render.lookAt(render, {
-	min: { x: 0, y: 0 },
+	min: { x: -40, y: -60 },
 	max: { x: 800, y: 600 }
 });
