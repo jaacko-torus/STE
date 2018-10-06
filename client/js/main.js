@@ -206,8 +206,10 @@ class spaceship {
 		if(origin_d ===  1) { origin_d = 1; } else
 		if(origin_d === -1) { origin_d = 2; }
 		
-		let d = (x % 2 + origin_d) % 2;
-		// let d = (y % 2 + origin_d) % 2;
+		let x_axis_d = (x % 2 + origin_d) % 2;
+		let y_axis_d = (y % 2 + origin_d) % 2;
+		let d = ((x_axis_d + y_axis_d) % 2 + origin_d) % 2;
+
 		console.log({x, y})
 		return { x, y, d };
 	}
@@ -231,7 +233,7 @@ class spaceship {
 let ss = new spaceship(
 	"jaacko0",
 	"ss0",
-	{ x: 200, y: 300, d: 1 },
+	{ x: 200, y: 300, d: 0 },
 	"cap0",
 	[
 		// testing x
@@ -242,10 +244,10 @@ let ss = new spaceship(
 		[  2,  0, -2 ],
 
 		// testing y
-		// [ -1, -1, -1 ],
+		[ -1, -1, -1 ],
 		[  0,  1,  0 ],
 		[  0,  1, -1 ],
-		// [  2,  2,  2 ]
+		[  2,  2,  2 ]
 	]
 );
 
