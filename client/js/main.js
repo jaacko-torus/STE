@@ -25,7 +25,7 @@ const render = Render.create({
 	options : {
 		width              : window.innerWidth,
 		height             : window.innerHeight,
-		showCollisions     : true,
+		// showCollisions     : true,
 		showAngleIndicator : true,
 		// wireframes: false
 	}
@@ -45,6 +45,7 @@ universe.modules = new Map();
 universe.capsules = new Map();
 universe.users = {}; // useless rn
 universe.spaceships = new Map();
+universe.constraints = new Map();
 
 // spaceship - includes capsule, synonimous with "user"
 class module {
@@ -82,9 +83,9 @@ class module {
 		// ];
 
 		return [
-			{ x: -(   s/8 ), y:  (s*Math.sqrt(3)/3) - (s*Math.sqrt(3)/8) },
-			{ x: -( 3*s/8 ), y: -(s*Math.sqrt(3)/6) + (s*Math.sqrt(3)/8) },
-			{ x: -(   s/4 ), y: -(s*Math.sqrt(3)/8) }
+			{ x: -(     s / 8 ), y:  (s * Math.sqrt(3) / 3) - (s * Math.sqrt(3) / 8) },
+			{ x: -( 3 * s / 8 ), y: -(s * Math.sqrt(3) / 6) + (s * Math.sqrt(3) / 8) },
+			{ x: -(     s / 4 ), y: -(s * Math.sqrt(3) / 6) }
 		];
 	}
 	
@@ -103,7 +104,7 @@ class module {
 
 			mod_value.angle           = mod_value.module.angle;
 			mod_value.angularVelocity = mod_value.module.angularVelocity;
-		});
+		})
 	}
 }
 
@@ -184,9 +185,82 @@ class spaceship {
 		for(let i = 0; i < mods.length; i++) {
 			let id = mods[i].toString();
 			let coords = spaceship.coords( position, spaceship.tri_to_sqr_coords( position.d, mods[i][0], mods[i][1], mods[i][2] ) );
-			console.log(coords);
 			this.modules[id] = new module(owner, id, { x: coords.x, y: coords.y, d: coords.d }, coords.angle);
 		}
+
+		this.add_constraints(mods);
+	}
+
+	add_constraints(mods) {		
+		let modules = [...mods, spaceship.cap_coords];
+		let list = [];
+
+		for(let i = 0; i < 3; i++) {
+			let j = (i + 1) % 3;
+			let k = (i + 2) % 3;
+
+			list[i] = [...modules].sort((a, b) => {
+				if(a[i] === b[i]) {
+					if(a[j] === b[j]) {
+						if(Math.abs(a[k] - b[k]) === 1) {
+							this.add_constraint(a, b, i, j, k);
+						}
+
+						return a[k] - b[k];
+					}
+					return a[j] - b[j];
+				}
+				return a[i] - b[i];
+			});
+		}
+
+
+		let [xy, yz, zx] = list;
+		console.log({xy, yz, zx});
+
+	}
+
+	add_constraint(a, b, i, j, k) {
+		let constraints = module.constraints; // array containing the coords for all modules
+
+		let dir = a[k] - b[k];
+
+		a = { x: undefined, y: undefined, body: a.toString() };
+		b = { x: undefined, y: undefined, body: b.toString() };
+
+		if( a.body === "0,0,0" ) { a.body = "cap0"; }
+		if( b.body === "0,0,0" ) { b.body = "cap0"; }
+
+		if(k === 0 && dir === -1) { a.x =  constraints[1].x; a.y =  constraints[1].y; b.x = -constraints[0].x; b.y = -constraints[0].y; }
+		if(k === 0 && dir ===  1) { a.x = -constraints[0].x; a.y = -constraints[0].y; b.x =  constraints[1].x; b.y -  constraints[1].y; }
+		if(k === 1 && dir === -1) { a.x =  constraints[2].x; a.y =  constraints[2].y; b.x =  constraints[2].x; b.y = -constraints[2].y; }
+		if(k === 1 && dir ===  1) { a.x =  constraints[2].x; a.y = -constraints[2].y; b.x =  constraints[2].x; b.y =  constraints[2].y; }
+		if(k === 2 && dir === -1) { a.x = -constraints[1].x; a.y =  constraints[1].y; b.x =  constraints[0].x; b.y = -constraints[0].y; }
+		if(k === 2 && dir ===  1) { a.x =  constraints[0].x; a.y = -constraints[0].y; b.x = -constraints[1].x; b.y =  constraints[1].y; }
+
+		universe.constraints.set(a.body + "|" + b.body, Constraint.create({
+			bodyA: universe.modules.get(a.body).module, pointA: { x: /*0*/ a.x, y: /*0*/ a.y },
+			bodyB: universe.modules.get(b.body).module, pointB: { x: /*0*/ b.x, y: /*0*/ b.y }
+		}));
+
+
+
+		if(k === 0 && dir === -1) { a.x =  constraints[0].x; a.y =  constraints[0].y; b.x = -constraints[1].x; b.y = -constraints[1].y; }
+		if(k === 0 && dir ===  1) { a.x = -constraints[1].x; a.y = -constraints[1].y; b.x =  constraints[0].x; b.y =  constraints[0].y; }
+		if(k === 1 && dir === -1) { a.x = -constraints[2].x; a.y =  constraints[2].y; b.x = -constraints[2].x; b.y = -constraints[2].y; }
+		if(k === 1 && dir ===  1) { a.x = -constraints[2].x; a.y = -constraints[2].y; b.x = -constraints[2].x; b.y =  constraints[2].y; }
+		if(k === 2 && dir === -1) { a.x = -constraints[0].x; a.y =  constraints[0].y; b.x =  constraints[1].x; b.y = -constraints[1].y; }
+		if(k === 2 && dir ===  1) { a.x =  constraints[1].x; a.y = -constraints[1].y; b.x = -constraints[0].x; b.y =  constraints[0].y; }
+
+		universe.constraints.set(b.body + "|" + a.body, Constraint.create({
+			bodyA: universe.modules.get(a.body).module, pointA: { x: /*0*/ a.x, y: /*0*/ a.y },
+			bodyB: universe.modules.get(b.body).module, pointB: { x: /*0*/ b.x, y: /*0*/ b.y }
+		}));
+
+		World.add(world, [
+			universe.constraints.get(a.body + "|" + b.body),
+			universe.constraints.get(b.body + "|" + a.body)
+		]);
 	}
 
 	static get cap_coords() { return [  0,  0,  0 ]; }
@@ -210,7 +284,6 @@ class spaceship {
 		let y_axis_d = (y % 2 + origin_d) % 2;
 		let d = ((x_axis_d + y_axis_d) % 2 + origin_d) % 2;
 
-		console.log({x, y})
 		return { x, y, d };
 	}
 
@@ -228,78 +301,49 @@ class spaceship {
 }
 
 
-
-
 let ss = new spaceship(
 	"jaacko0",
 	"ss0",
 	{ x: 200, y: 300, d: 0 },
 	"cap0",
-	[
-		// testing x
-		[  0,  0,  1 ],
-		[  1,  0,  0 ],
-		[  1,  0, -1 ],
-		[  1,  0, -2 ],
-		[  2,  0, -2 ],
+	[ // ordered by y, z, x
+		// -2
+		[  2, -2,  0 ],
+		[  2, -2,  1 ],
+		[  1, -2,  1 ],
+		[  1, -2,  2 ],
+		[  0, -2,  2 ],
 
-		// testing y
-		[ -1, -1, -1 ],
-		[  0,  1,  0 ],
+		// -1
+		[  2, -1,  0 ],
+		[  1, -1,  0 ],
+		[  1, -1,  1 ],
+		[  0, -1,  1 ],
+		[  0, -1,  2 ],
+
+		// 0
+		[  1,  0, -1 ],
+		[  1,  0,  0 ],
+		// [  0,  0,  0 ], implied
+		[  0,  0,  1 ],
+		[ -1,  0,  1 ],
+
+		// 1
+		[  1,  1, -1 ],
 		[  0,  1, -1 ],
-		[  2,  2,  2 ]
+		[  0,  1,  0 ],
+		[ -1,  1,  0 ],
+		[ -1,  1,  1 ],
+
+		// 2
+		[  0,  2, -2 ],
+		[  0,  2, -1 ],
+		[ -1,  2, -1 ],
+		[ -1,  2,  0 ],
+		[ -2,  2,  0 ],
 	]
 );
 
-// let hs = new spaceship(
-// 	"jaacko1",
-// 	"ss1",
-// 	{ x: 150, y: 200, d: 0 },
-// 	"cap1",
-// 	[
-// 		[  1,  0,  0 ],
-// 		[  0,  0,  1 ]
-// 	]
-// );
-
-// --------------------------------------------------------------------------------------------------------------------
-/* -- Making new objects -- */
-
-/*
- 1. Make spaceship object
- 2. add a capsule
- 3. add modules
- 4. You're allowed to add them all at once using the `spaceship` class
-*/
-
-
-// let ss = {}; // spaceship
-
-// ss.mod1 = new module("none", "mod1", {x:  50, y:  50});
-// ss.capsule = new capsule("jaackotorus", "cap0", { x: 150, y: 150 });
-
-
-
-// ss.mod2 = new module("[1,0,0]", {
-// 	x: ss.capsule.position.x + (module.size / 2),
-// 	y: ss.capsule.position.y - (module.size * Math.sqrt(12) / 12)
-// }, 3 * Math.PI / 2);
-// ss.mod3 = new module("[0,0,1]", {
-// 	x: ss.capsule.position.x - (module.size / 2),
-// 	y: ss.capsule.position.y - (module.size * Math.sqrt(12) / 12)
-// }, 3 * Math.PI / 2);
-
-// ss.c1 = Constraint.create({
-// 	bodyA  : Capsules[ss.capsule.id] , pointA : { x: -module.constraints[0].x, y:  module.constraints[0].y },
-// 	bodyB  : Modules[ss.mod2.id]     , pointB : { x:  module.constraints[1].x, y: -module.constraints[1].y }
-// });
-
-// ss.c2 = Constraint.create({
-// 	bodyA  : Capsules[ss.capsule.id] , pointA : { x: -module.constraints[1].x, y:  module.constraints[1].y },
-// 	bodyB  : Modules[ss.mod2.id]     , pointB : { x:  module.constraints[0].x, y: -module.constraints[0].y }
-// });
-
-// World.add(world, [ss.c1, ss.c2]);
 
 // --------------------------------------------------------------------------------------------------------------------
 /* -- input events & loop -- */
@@ -337,6 +381,6 @@ Events.on(engine, "beforeUpdate", (event) => { // update loop, 60fps, 60 counter
 
 // fit the render viewport to the scene; camera
 Render.lookAt(render, {
-	min: { x: -40, y: -60 },
-	max: { x: 800, y: 600 }
+	min: { x: - 40, y: - 60 },
+	max: { x:  800, y:  600 }
 });
