@@ -49,27 +49,22 @@ Runner.run(runner, engine);
 	with 5 crossing triangle as it's base and a height of 5 triangle heights stacked on top
 */
 
-let module_preset_d0_5x5 = [
-	// -2
-	[  2, -2,  0, "t1" ],
-	[  2, -2,  1, "t1" ],
-	[  1, -2,  1, "t1" ],
-	[  1, -2,  2, "t1" ],
-	[  0, -2,  2, "t1" ],
+let module_preset_d0_single = [ [  0,  0,  0, "q1" ] ];
+let module_preset_d1_single = [ [  0,  0,  0, "q1" ] ];
 
-	// -1
-	[  2, -1,  0, "t1" ],
-	[  1, -1,  0, "t1" ],
-	[  1, -1,  1, "t1" ],
-	[  0, -1,  1, "t1" ],
-	[  0, -1,  2, "t1" ],
+let module_preset_d1_dt = [ // double thruster
+	[  0   ,    0 ,  0   , "q1" ],
+	[  0.5 ,    1 ,  0   , "r3" ],
+	[  0   ,    1 ,  0.5 , "r3" ]
+]
 
-	// 0
-	[  1,  0, -1, "t1" ],
-	[  1,  0,  0, "t1" ],
-	// [  0,  0,  0, "t1" ], implied
-	[  0,  0,  1, "t1" ],
-	[ -1,  0,  1, "t1" ],
+let module_preset_d0_5x5 = [ // NOTE: do not use for now
+	// 2
+	[  0,  2, -2, "t1" ],
+	[  0,  2, -1, "t1" ],
+	[ -1,  2, -1, "t1" ],
+	[ -1,  2,  0, "t1" ],
+	[ -2,  2,  0, "t1" ],
 
 	// 1
 	[  1,  1, -1, "t1" ],
@@ -78,50 +73,65 @@ let module_preset_d0_5x5 = [
 	[ -1,  1,  0, "t1" ],
 	[ -1,  1,  1, "t1" ],
 
-	// 2
-	[  0,  2, -2, "t1" ],
-	[  0,  2, -1, "t1" ],
-	[ -1,  2, -1, "t1" ],
-	[ -1,  2,  0, "t1" ],
-	[ -2,  2,  0, "t1" ]
+	// 0
+	[  1,  0, -1, "t1" ],
+	[  1,  0,  0, "t1" ],
+	[  0,  0,  0, "q1" ],
+	[  0,  0,  1, "t1" ],
+	[ -1,  0,  1, "t1" ],
+
+	// -1
+	[  2, -1,  0, "t1" ],
+	[  1, -1,  0, "t1" ],
+	[  1, -1,  1, "t1" ],
+	[  0, -1,  1, "t1" ],
+	[  0, -1,  2, "t1" ],
+
+	// -2
+	[  2, -2,  0, "t1" ],
+	[  2, -2,  1, "r3" ],
+	[  1, -2,  1, "t1" ],
+	[  1, -2,  2, "r3" ],
+	[  0, -2,  2, "t1" ],
+	// two bottom ones are thrusters
 ];
 
-let module_preset_d1_5x5 = [
-		// 2 
-		// [  0,  2, -2, "t1" ],
-		// [  0,  2, -1, "t1" ],
-		// [ -1,  2, -1, "t1" ],
-		// [ -1,  2,  0, "t1" ],
-		// [ -2,  2,  0, "t1" ],
-
-		// // 1
-		// [  1,  1, -1, "t1" ],
-		// [  0,  1, -1, "t1" ],
-		// [  0,  1,  0, "t1" ],
-		// [ -1,  1,  0, "t1" ],
-		// [ -1,  1,  1, "t1" ],
-
-		// 0
-		[  1,  0, -1, "t1" ],
-		[  1,  0,  0, "t1" ],
-		// [  0,  0,  0, "t1" ], implied
-		[  0,  0,  1, "t1" ],
-		[ -1,  0,  1, "t1" ],
-
-		// -1
-		// [  1, -1,  0, "t1" ],
-		// [  2, -1,  0, "t1" ],
-		// [  1, -1,  1, "t1" ],
-		// [  0, -1,  1, "t1" ],
-		// [  0, -1,  2, "t1" ],
-
-		// // -2
-		// [  2, -2,  0, "r3" ],
-		// [  2, -2,  1, "t1" ],
-		// [  1, -2,  1, "r3" ],
-		// [  1, -2,  2, "t1" ],
-		// [  0, -2,  2, "r3" ]
-		// three bottom modules are thrusters
+let module_preset_d1_5x5 = [ // NOTE: do not use for now
+	// 2
+	[  2, -2,  0, "t1" ],
+	[  2, -2,  1, "t1" ],
+	[  1, -2,  1, "t1" ],
+	[  1, -2,  2, "t1" ],
+	[  0, -2,  2, "t1" ],
+	
+	// 1
+	[  1, -1,  0, "t1" ],
+	[  2, -1,  0, "t1" ],
+	[  1, -1,  1, "t1" ],
+	[  0, -1,  1, "t1" ],
+	[  0, -1,  2, "t1" ],
+	
+	// 0
+	[  1,  0, -1, "t1" ],
+	[  1,  0,  0, "t1" ],
+	[  0,  0,  0, "q1" ],
+	[  0,  0,  1, "t1" ],
+	[ -1,  0,  1, "t1" ],
+		
+	// -1
+	[  1,  1, -1, "t1" ],
+	[  0,  1, -1, "t1" ],
+	[  0,  1,  0, "t1" ],
+	[ -1,  1,  0, "t1" ],
+	[ -1,  1,  1, "t1" ],
+		
+	// -2 
+	[  0,  2, -2, "r3" ],
+	[  0,  2, -1, "t1" ],
+	[ -1,  2, -1, "r3" ],
+	[ -1,  2,  0, "t1" ],
+	[ -2,  2,  0, "r3" ]
+	// three bottom modules are thrusters
 ];
 
 
@@ -139,39 +149,43 @@ universe.constraints = new Map();
 
 // spaceship - includes capsule, synonimous with "user"
 class module {
-	constructor(owner, id, {x, y, d}, {level, interval}, angle = Math.PI / 2) {
+	constructor(owner, id, {x, y, d}, {level, interval, size}, angle = Math.PI / 2) {
 		this.owner = owner;
 
 		this.level    = level;
 		this.interval = interval;
 
-		this.position     = { x, y, d };
-		this.velocity     = { x: 0, y: 0 };
-
-		this.angle        = (         angle );
-		this.angularSpeed = ( Math.PI / 900 );
+		this.position = { x, y, d };
+		this.velocity = { x: 0, y: 0 };
+		this.angle    = angle;
 		
-		this.module = module.create(this);
+		this.module = module.create(this, size);
 		module.add_to_list(universe.modules, id, this);
-	}
-
-	
-	get speed() {
-		let angle = this.angle;
-		return {
-			get x() { return -Math.cos(angle) },
-			get y() { return -Math.sin(angle) }
-		}
 	}
 	
 	// size refers to the size of a single face of the triangle
 	// height refers to the height of the triangle
 	// length is the value which needs to be pluged in in order to have an equilateral triangle with a side size of specified value.
-	static get size() { return 50; }
-	static get height() { return module.size * Math.sqrt(3) / 2; }
-	static get length() { return module.size * Math.sqrt(3) / 3; }
-	static get constraints() {
-		let s = module.size;return [
+	static get w_size()   { return 50; } // whole
+	static get w_height() { return module.w_size * Math.sqrt(3) / 2; }
+	static get w_length() { return module.w_size * Math.sqrt(3) / 3; }
+
+	static get h_size()   { return module.w_size / 2; } // half
+	static get h_height() { return module.h_size * Math.sqrt(3) / 2; }
+	static get h_length() { return module.h_size * Math.sqrt(3) / 3; }
+	
+	static get w_constraints() {
+		let s = module.w_size;
+		return [
+			{ x: -(     s / 8 ), y:  (s * Math.sqrt(3) / 3) - (s * Math.sqrt(3) / 8) },
+			{ x: -( 3 * s / 8 ), y: -(s * Math.sqrt(3) / 6) + (s * Math.sqrt(3) / 8) },
+			{ x: -(     s / 4 ), y: -(s * Math.sqrt(3) / 6) }
+		];
+	}
+
+	static get h_constraints() {
+		let s = module.h_size;
+		return [
 			{ x: -(     s / 8 ), y:  (s * Math.sqrt(3) / 3) - (s * Math.sqrt(3) / 8) },
 			{ x: -( 3 * s / 8 ), y: -(s * Math.sqrt(3) / 6) + (s * Math.sqrt(3) / 8) },
 			{ x: -(     s / 4 ), y: -(s * Math.sqrt(3) / 6) }
@@ -180,8 +194,11 @@ class module {
 	
 	static add_to_list(list, id, self) { list.set( id, self ); }
 
-	static create(self) {
-		let mod = Bodies.polygon(self.position.x, self.position.y, 3, module.length, { angle: self.angle, mass: 1 });
+	static create(self, size) {
+		let mod;
+		if( size === 0.5 ) { mod = Bodies.polygon(self.position.x, self.position.y, 3, module.h_length, { angle: self.angle, mass: 0.25 }); }
+		if( size === 1   ) { mod = Bodies.polygon(self.position.x, self.position.y, 3, module.w_length, { angle: self.angle, mass: 1    }); }
+
 		World.add(world, mod);
 		return mod;
 	}
@@ -268,6 +285,8 @@ class capsule extends module {
 		
 		module.add_to_list(universe.capsules, id, this);
 	}
+
+	// get angularSpeed() { return Math.PI / 900; }
 	
 	static update() { module.update(); }
 }
@@ -287,25 +306,20 @@ class q1 extends capsule {
 	}
 	
 	get speed() { return super.speed; }
-	
-	static event_handler(mod_value) {
-		let speed_x, speed_y;
-		// NOTE: torque will no longer be needed once basic thrusters are implemented
-		// NOTE: torque will be needed once directional thrusters are implemented
-		if(mod_value.position.d === 0) { speed_x = -mod_value.speed.x; speed_y = -mod_value.speed.y; }
-		if(mod_value.position.d === 1) { speed_x =  mod_value.speed.x; speed_y =  mod_value.speed.y; }
-		
-		if( mod_value.keys.left  ) { mod_value.module.torque = -mod_value.angularSpeed }
-		if( mod_value.keys.up    ) { mod_value.module.force = { x:  speed_x/8000, y:  speed_y/8000 }; }
-		if( mod_value.keys.right ) { mod_value.module.torque =  mod_value.angularSpeed }
-		if( mod_value.keys.down  ) { mod_value.module.force = { x: -speed_x/8000, y: -speed_y/8000 }; }
+
+	static event_handler(cap) {
+		for(let mod in universe.spaceships.get(cap.owner).modules) {
+			if(universe.spaceships.get(cap.owner).modules[mod].category === "R3") {
+				universe.spaceships.get(cap.owner).modules[mod].event_handler(cap);
+			}
+		}
 	}
 	
 	static update() {
 		capsule.update();
 
-		universe.capsules.forEach((mod_value, id_key) => {
-			q1.event_handler(mod_value);
+		universe.capsules.forEach((cap, id) => {
+			q1.event_handler(cap);
 		});
 	}
 }
@@ -314,21 +328,49 @@ class q1 extends capsule {
 // thrusters
 
 
-// thrusters need at least one clear side
+// NOTE: thrusters need at least one clear side
 class thruster extends module {
-	constructor(owner, id, position, angle) {
-		super(owner, id, position, angle);
+	constructor(owner, id, position, meta, angle) {
+		super(owner, id, position, meta, angle);
 
 		this.class    = "regular";
 		this.code     = "0";
 	}
+	
+	get speed() {
+		let angle = this.angle;
+		let rate  = 1/8000;
+		return {
+			get x() { return -Math.cos(angle) * rate; },
+			get y() { return -Math.sin(angle) * rate; }
+		};
+	}
+
+	get angularSpeed() { return Math.PI / 900; }
+
+	event_handler(cap) {
+		let speed_x, speed_y;
+		// NOTE: torque will no longer be needed once basic thrusters are implemented
+		// NOTE: torque will be needed once directional thrusters are implemented
+		if(cap.position.d === 0) { speed_x =  this.speed.x; speed_y =  this.speed.y; }
+		if(cap.position.d === 1) { speed_x =  this.speed.x; speed_y =  this.speed.y; }
+
+		if( cap.keys.up    ) { this.module.force  = { x:  speed_x, y:  speed_y }; }
+		if( cap.keys.left  ) { this.module.torque = -this.angularSpeed; }
+		if( cap.keys.down  ) { this.module.force  = { x: -speed_x, y: -speed_y }; }
+		if( cap.keys.right ) { this.module.torque =  this.angularSpeed; }
+	}
 }
 
 class r3 extends thruster { // electric
-	constructor(owner, id, position, angle) {
-		super(owner, id, position, angle);
+	constructor(owner, id, position, meta, angle) {
+		super(owner, id, position, meta, angle);
 
 		this.category = "R3";
+	}
+
+	event_handler(cap, speed_x, speed_y) {
+		super.event_handler(cap, speed_x, speed_y);
 	}
 }
 
@@ -337,7 +379,7 @@ class r3 extends thruster { // electric
 
 
 class spaceship {
-	constructor(owner, id, position, cap = "main", mods = [], angle = 3 * Math.PI / 2) {
+	constructor(owner, id, position, mods = [], angle = 3 * Math.PI / 2) {
 		if(position.d === 0) { angle = 3 * Math.PI / 2; } else
 		if(position.d === 1) { angle =     Math.PI / 2; }
 
@@ -349,17 +391,37 @@ class spaceship {
 
 		this.keys = {};
 
-		this.capsule = {};
 		this.modules = {};
+		this.constraints = {};
 		
-		this.add_modules(id, cap, mods, this.position);
+		this.add_modules(id, mods, this.position);
 		module.add_to_list(universe.spaceships, id, this);
 
 		universe.users.get(owner).spaceships[id] = this;
 	}
 
-	constraint_management(cap, a, b, k, d) {
-		let constraints = module.constraints; // array containing the coords for all modules
+	reset(owner) {
+		for( let constraint of universe.constraints.keys() ) { universe.constraints.delete(constraint); }
+
+		for( let constraint in this.constraints ) { delete this.constraints[constraint]; }
+		for( let module     in this.modules     ) { delete this.modules[module]; }
+	}
+
+	w_or_h(coords) {
+		let [x, y, z] = coords;
+		let total = (x + y + z) % 1;
+
+		if( total === 0   ) { return 1   ; }
+		if( total === 0.5 ) { return 0.5 ; }
+		// determine if module is whole or half, 1 or 0.5
+		// return 1;
+	}
+
+	constraint_management(owner, a, b, k, d, size) {
+		// array containing the coords for all modules
+		let constraints;
+		if( size = 0.5 ) { constraints = module.h_constraints; }
+		if( size = 1   ) { constraints = module.w_constraints; }
 
 		let i = (k + 1) % 3;
 		let j = (k + 2) % 3;
@@ -368,9 +430,6 @@ class spaceship {
 
 		a = { x: undefined, y: undefined, body: a.toString() };
 		b = { x: undefined, y: undefined, body: b.toString() };
-
-		if( a.body === "0,0,0" ) { a.body = cap; }
-		if( b.body === "0,0,0" ) { b.body = cap; }
 
 		if(d === 0) {
 			if(k === 0 && o === -1) { a.x =  constraints[1].x; a.y =  constraints[1].y; b.x = -constraints[0].x; b.y = -constraints[0].y; }
@@ -390,10 +449,13 @@ class spaceship {
 			if(k === 2 && o ===  1) { a.x =  constraints[0].x; a.y =  constraints[0].y; b.x = -constraints[1].x; b.y = -constraints[1].y; }
 		}
 
-		universe.constraints.set(a.body + "|" + b.body, Constraint.create({
-			bodyA: universe.modules.get(a.body).module, pointA: { x: a.x, y: a.y },
-			bodyB: universe.modules.get(b.body).module, pointB: { x: b.x, y: b.y }
-		}));
+		universe.constraints.set(a.body + "|" + b.body, {
+			owner,
+			constraint: Constraint.create({
+				bodyA: universe.modules.get(a.body).module, pointA: { x: a.x, y: a.y },
+				bodyB: universe.modules.get(b.body).module, pointB: { x: b.x, y: b.y }
+			})
+		});
 
 		if(d === 0) {
 			if(k === 0 && o === -1) { a.x =  constraints[0].x; a.y =  constraints[0].y; b.x = -constraints[1].x; b.y = -constraints[1].y; }
@@ -413,46 +475,46 @@ class spaceship {
 			if(k === 2 && o ===  1) { a.x =  constraints[1].x; a.y =  constraints[1].y; b.x = -constraints[0].x; b.y = -constraints[0].y; }
 		}
 
-		universe.constraints.set(b.body + "|" + a.body, Constraint.create({
-			bodyA: universe.modules.get(a.body).module, pointA: { x: a.x, y: a.y },
-			bodyB: universe.modules.get(b.body).module, pointB: { x: b.x, y: b.y }
-		}));
+		universe.constraints.set(b.body + "|" + a.body, {
+			owner,
+			constraint: Constraint.create({
+				bodyA: universe.modules.get(a.body).module, pointA: { x: a.x, y: a.y },
+				bodyB: universe.modules.get(b.body).module, pointB: { x: b.x, y: b.y }
+			})
+		});
 
 		return { a: a.body, b: b.body };
 	}
 
-	add_by_type(owner, id, category, {x, y, d}, {level, interval}, angle) {
+	add_by_type(owner, id, category, {x, y, d}, {level, interval, size}, angle) {
+		// capsules
+		if(category === "q1") { this.modules[id] = new q1( owner, id, { x, y, d }, {level, interval, size}, angle); this.keys = this.modules[id].keys; }
+
 		// structs
-		if(category === "t1") { this.modules[id] = new t1( owner, id, { x, y, d }, {level, interval}, angle); }
+		if(category === "t1") { this.modules[id] = new t1( owner, id, { x, y, d }, {level, interval, size}, angle); }
+		
 		// thrusters
-		if(category === "r3") { this.modules[id] = new r3( owner, id, { x, y, d }, {level, interval}, angle); } // electric, no fuel <- innexpensive and it just works
+		if(category === "r3") { this.modules[id] = new r3( owner, id, { x, y, d }, {level, interval, size}, angle); } // electric, no fuel <- innexpensive and it just works
 	}
 	
-	add_modules(owner, cap, mods, position) {
+	add_modules(owner, mods, position) {
 		let level = "I";
 		let interval = "Alpha";
 
-		// first add the capsule
-		let cap_coords = spaceship.cap_coords;
-		let coords = spaceship.coords( position, spaceship.tri_to_sqr_coords( position.d, cap_coords[0], cap_coords[1], cap_coords[2] ) );
-		console.log(coords);
-		// this.capsule = new capsule(owner, cap, { x: coords.x, y: coords.y, d: coords.d }, {level, interval}, coords.angle);
-		this.capsule = new q1(owner, cap, { x: coords.x, y: coords.y, d: coords.d }, {level, interval}, coords.angle);
-		this.keys = this.capsule.keys;
-
-		// then add all other modules
 		for(let i = 0; i < mods.length; i++) {
-			let category = mods[i][3];
+			// remove the fourth item that indicates the category, since the id will not be comprimised of it's category
+			let category = mods[i].pop(3);
 			let id = mods[i].toString();
 			let coords = spaceship.coords( position, spaceship.tri_to_sqr_coords( position.d, mods[i][0], mods[i][1], mods[i][2] ) );
 
-			this.add_by_type(owner, id, category, { x: coords.x, y: coords.y, d: coords.d }, {level, interval}, coords.angle)
+			let size = this.w_or_h(mods[i]);
+			this.add_by_type(owner, id, category, { x: coords.x, y: coords.y, d: coords.d }, {level, interval, size}, coords.angle)
 		}
 
-		this.add_constraints(cap, mods, position.d);
+		this.add_constraints(owner, mods, position.d); // NOTE: add size prop later
 	}
 
-	add_constraints(cap, mods, dir) {
+	add_constraints(owner, mods, dir) {
 		let list = [];
 
 		//create three ordered lists ordered by xy, yz, zx
@@ -462,12 +524,12 @@ class spaceship {
 			let k = (i + 2) % 3;
 
 			// start sorting arrays and add to `list`, arrays to be sorted are copies of `mods` + `spaceship.cap_coords` which is `[0,0,0]`
-			list[i] = [...mods, ...[spaceship.cap_coords]].sort((a, b) => {
+			list[i] = [...mods].sort((a, b) => {
 				if(a[i] === b[i]) {
 					if(a[j] === b[j]) {
 						if(Math.abs(a[k] - b[k]) === 1) {
 							// if two consecutive modular number coordinates are followed by a last coordinate in both arrays which has a difference of one, then the two modules are adjacent and should have a constraint
-							this.add_constraint(cap, a, b, k, dir);
+							this.add_constraint(owner, a, b, k, dir);
 						}
 
 						return a[k] - b[k];
@@ -482,24 +544,23 @@ class spaceship {
 		return {xy, yz, zx};
 	}
 
-	add_constraint(cap, a, b, k, dir) {
-		let c = this.constraint_management(cap, a, b, k, dir);
+	add_constraint(owner, a, b, k, dir) {
+		let c = this.constraint_management(owner, a, b, k, dir);
 
 		World.add(world, [
-			universe.constraints.get(c.a + "|" + c.b),
-			universe.constraints.get(c.b + "|" + c.a)
+			universe.constraints.get(c.a + "|" + c.b).constraint,
+			universe.constraints.get(c.b + "|" + c.a).constraint
 		]);
 
 		return c;
 	}
-
-	static get cap_coords() { return [  0,  0,  0 ]; }
 
 	// origin_d represents direction of main or capsule which can be either 0, or 1;
 	// while output d is the orientation of module given it's coords and origin_d
 	static tri_to_sqr_coords(origin_d, x, y, z) {
 		// NOTE: simplify if-elses by checking position parameter before entering the equation
 		console.log({x, y, z});
+		
 		if(origin_d === 0) { origin_d = -1; } else
 		if(origin_d === 1) { origin_d =  1; } else
 		{ return console.log("please enter a correct position parameter"); }
@@ -517,14 +578,18 @@ class spaceship {
 		return { x, y, d };
 	}
 
-	static coords(origin, sqr_coords) {
-		let angle, y_offset = (module.size * Math.sqrt(12) / 12) / 2;
+	static coords(origin, sqr_coords, size) {
+		let height;
+		if( size = 0.5 ) { size = "h_size"; height = "h_height"; }
+		if( size = 1   ) { size = "w_size"; height = "w_height"; }
+
+		let angle, y_offset = (module[size] * Math.sqrt(12) / 12) / 2;
 		
 		if(sqr_coords.d === 0) { angle = 3 * Math.PI / 2; y_offset *= -1; } else
 		if(sqr_coords.d === 1) { angle =     Math.PI / 2; y_offset *=  1; }
 		
-		let x = origin.x + ( (module.size / 2) * sqr_coords.x );
-		let y = origin.y - (  module.height    * sqr_coords.y ) + y_offset;
+		let x = origin.x + ( (module[size] / 2) * sqr_coords.x );
+		let y = origin.y - (  module[height]    * sqr_coords.y ) + y_offset;
 
 		return { x, y, d: sqr_coords.d, angle };
 	}
@@ -551,17 +616,18 @@ new spaceship(
 	"jaacko0",
 	"ss0",
 	{ x: 200, y: 300, d: 1 },
-	"cap0",
-	[ // ordered by y, z, x
-		// for d = 0
+	[ // modules
+		// ordered by y, z, x
+		// ...module_preset_d1_single
+		// ...module_preset_d1_dt
 		// ...module_preset_d0_5x5
-		//  for d = 1
 		...module_preset_d1_5x5
-	]
+	],
 );
 
 let ss;
 ss = universe.spaceships.get("ss0");
+
 
 // --------------------------------------------------------------------------------------------------------------------
 /* -- input events & loop -- */
@@ -573,10 +639,10 @@ function add_keyboard_events() {
 			if( key_dir === "keydown" ) { key_dir =  true; }
 			if( key_dir === "keyup"   ) { key_dir = false; }
 			
-			if (e.key.toLowerCase() === "w" || e.key === "ArrowUp"    ) { ss.capsule.keys.up    = key_dir; }
-			if (e.key.toLowerCase() === "a" || e.key === "ArrowLeft"  ) { ss.capsule.keys.left  = key_dir; }
-			if (e.key.toLowerCase() === "d" || e.key === "ArrowRight" ) { ss.capsule.keys.right = key_dir; }
-			if (e.key.toLowerCase() === "s" || e.key === "ArrowDown"  ) { ss.capsule.keys.down  = key_dir; }
+			if (e.key.toLowerCase() === "w" || e.key === "ArrowUp"    ) { ss.keys.up    = key_dir; }
+			if (e.key.toLowerCase() === "a" || e.key === "ArrowLeft"  ) { ss.keys.left  = key_dir; }
+			if (e.key.toLowerCase() === "d" || e.key === "ArrowRight" ) { ss.keys.right = key_dir; }
+			if (e.key.toLowerCase() === "s" || e.key === "ArrowDown"  ) { ss.keys.down  = key_dir; }
 		});
 	}
 
