@@ -7,12 +7,30 @@
 	<title>STE</title>
 
 	<link rel="stylesheet" href="css/style.css">
+	
 	<!--+ libraries +-->
-	<script defer src="js/jquery.min.js"></script>
-	<script defer src="js/matter.js"></script>
+	<script src="js/libs/jquery.min.js"></script>
+	<script src="js/libs/matter.js"></script>
+	
+	<!--+ presets +-->
+	<script type="module" src="js/presets/module_setup_presets.js"></script>
+	
+	<!--+ lists +-->
+	<script type="module" src="js/universe/universe.js"></script>
+	
+	<!--+ classes +-->
+	<script type="module" src="js/universe/user/spaceship/modules/module.js"></script>
+	<script type="module" src="js/universe/user/spaceship/modules/structs/struct.js"></script>
+	<script type="module" src="js/universe/user/spaceship/modules/capsules/capsule.js"></script>
+	<script type="module" src="js/universe/user/spaceship/modules/thrusters/thrusters.js"></script>
+	
+	<script type="module" src="js/universe/universe.js"></script>
+	
+	<script type="module" src="js/universe/user/user.js"></script>
+	
 	<!--+ game +-->
-	<script defer src="js/interface.js"></script>
-	<script defer src="js/main.js"></script>
+	<script type="module" src="js/interface.js"></script>
+	<script type="module" src="js/main.js"></script>
 </head>
 <body>
 	<canvas id="canvas"></canvas>
