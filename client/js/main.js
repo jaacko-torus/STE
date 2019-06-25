@@ -83,7 +83,8 @@ new Spaceship(
 		// ...module_preset_d1_single
 		// ...module_preset_d1_dt
 		// ...module_preset_d0_5x5
-		...module_preset.module_preset_d1_5x5
+		// ...module_preset.module_preset_d1_5x5
+		...module_preset.module_preset_d1_single
 	],
 );
 

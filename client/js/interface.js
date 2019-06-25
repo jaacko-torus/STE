@@ -3,10 +3,62 @@ import { universe } from "./universe/universe.js";
 
 function interface_script(world, Runner, runner) {
 	$(document).ready(() => {
-		$("#new_ship").click(() => {
+		$("#new_ship_code").val(
+`// comments don't work
+// so don't use them here
+// and erase these after you read them
+
+/*
+this is the \`d\` variable
+it changes the direction of the y axis
+
+0 is down
+1 is up
+*/
+[ 0 ],
+
+/*
+this is the main module
+you shouldn't mess with this
+*/
+[  0,  0,  0, ["Q1", {"main": true}] ],
+
+/*
+these are the modules
+they are setup like this
+[x, y, z, ["type"]]
+there are currently 3 types:
+ Q1 - capsule
+ T1 - structural
+ R3 - thrusters
+
+I use triangular coordinates for module placement:
+https://bit.ly/2IFMQpq
+
+have fun :P
+*/
+
+[  0,  1,  0, ["T1"] ],
+
+[  1,  0,  0, ["T1"] ],
+[  0,  0,  1, ["T1"] ]
+`);
+		
+		// $("#new_ship_code").on("click", function() {
+		// 	if($(this).val()) { $(this).prop("placeholder", "") }
+		// });
+		
+		$("#new_ship").on("click", () => {
 			reset(world, "jaacko0", "ss0");
 			
 			// square brackets required for JSON parser
+			/*
+				Please submit the new ship in format:
+					[ 0], // d: 0 or 1
+					[ 0, 0, 0, ["Q1", {"main": true}]], // required module
+					[ 1, 1, 1, ["R1"]], // additional modules: coordx, coordy, coordx, ["type"]
+					...
+			*/
 			let new_ship_code = `[${$("#new_ship_code").val()}]`;
 			
 			let new_ship_JSON = JSON.parse(new_ship_code);
