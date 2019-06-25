@@ -129,20 +129,20 @@
 // 	[  1, -2,  2, "R3" ]
 // ];
 
-let module_preset_d0_single = [ [  0,  0,  0, ["Q1", {main: true}] ] ];
-let module_preset_d1_single = [ [  0,  0,  0, ["Q1", {main: true}] ] ];
+let module_preset_d0_single = [ [  0,  0,  0, ["Q1", {"main": true}] ] ];
+let module_preset_d1_single = [ [  0,  0,  0, ["Q1", {"main": true}] ] ];
 
 let module_preset_d1_dt = [ // double thruster
-	[  0   ,  0   ,  0   , ["Q1", { size: 0.5, main: true }] ],
-	[  0.5 ,  1   ,  0   , ["R3", { size: 0.5 }] ],
-	[  0   ,  1   ,  0.5 , ["R3", { size: 0.5 }] ],
+	[  0   ,  0   ,  0   , ["Q1", { "size": 0.5, "main": true }] ],
+	[  0.5 ,  1   ,  0   , ["R3", { "size": 0.5 }] ],
+	[  0   ,  1   ,  0.5 , ["R3", { "size": 0.5 }] ],
 
-	[  1   ,  1   , -1   , ["T1", { size: 0.5 }] ],
-	[ -1   ,  1   ,  1   , ["T1", { size: 0.5 }] ],
+	[  1   ,  1   , -1   , ["T1", { "size": 0.5 }] ],
+	[ -1   ,  1   ,  1   , ["T1", { "size": 0.5 }] ],
 ]
 
 let module_preset_d0_5x5 = [ // NOTE: do not use for now
-	[  0,  0,  0, ["Q1", {main: true}] ],
+	[  0,  0,  0, ["Q1", {"main": true}] ],
 	
 	// 2
 	[  0,  2, -2, ["T1"] ],
@@ -182,7 +182,7 @@ let module_preset_d0_5x5 = [ // NOTE: do not use for now
 ];
 
 let module_preset_d1_5x5 = [ // NOTE: do not use for now
-	[  0,  0,  0, ["Q1", {main: true}] ],
+	[  0,  0,  0, ["Q1", {"main": true}] ],
 	
 	// 2
 	[  2, -2,  0, ["T1"] ],
@@ -222,7 +222,7 @@ let module_preset_d1_5x5 = [ // NOTE: do not use for now
 ];
 
 let module_preset_d0_cool_ship = [
-	[  0,  0,  0, ["Q1", {main: true}] ],
+	[  0,  0,  0, ["Q1", {"main": true}] ],
 	
 	[  0,  2, -1, ["T1"] ],
 	[ -1,  2, -1, ["T1"] ],
