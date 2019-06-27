@@ -1,6 +1,10 @@
-# finding vertices
+# Finding Center of Mass
 
-## an illustration
+To find the center of mass, one must find the exterior vertices
+
+## Listing all vertices
+
+Given a list of modules, one must filter repeated coodinates
 
 the diagram
 
@@ -20,14 +24,15 @@ the diagram
 and the code
 
 ```
-[vertex array]
-[repeated]
-compute vertices | coord x4:
+let [vertex array]
+let [repeated]
+
+func compute vertices | coord x4:
 	(top    left: x, y) | (top    right: x, y) |
 	(bottom left: x, y) | (bottom right: x, y)
 	
 	add coord to [vertex array] if (coord doesn't exists in [vertex array])
-	else return (coord" exists") and add to [repeated] and return [repeated] length
+	else return "coord exists" and add to [repeated] and return [repeated] length
 
 start
 	lowest x: -1
@@ -247,10 +252,10 @@ d:
     /   \         /   \
    /     \       /     \
   /       \  0  /       \
- /      4  \   /  2      \
+ /      5  \   /  2      \
 /___________\_/___________\
 \           / \           /
- \      3  /   \  5      /
+ \      3  /   \  4      /
   \       /  1  \       /
    \     /       \     /
     \   /         \   /
@@ -261,8 +266,8 @@ d:
 1: ($1$ , $0$)  
 2: ($+0.5$ , $+0.5\sqrt{3}$)  
 3: ($-0.5$ , $-0.5\sqrt{3}$)  
-4: ($-0.5$ , $+0.5\sqrt{3}$)  
-5: ($+0.5$ , $-0.5\sqrt{3}$)	
+4: ($+0.5$ , $-0.5\sqrt{3}$)  
+5: ($-0.5$ , $+0.5\sqrt{3}$)	
 
 
 

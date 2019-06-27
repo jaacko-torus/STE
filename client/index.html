@@ -5,12 +5,13 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
 	<title>STE</title>
-
+	
 	<link rel="stylesheet" href="css/style.css">
 	
 	<!--+ libraries +-->
-	<script src="js/libs/jquery.min.js"></script>
-	<script src="js/libs/matter.js"></script>
+	<script defer src="js/libs/jquery.min.js"></script> <!-- 3.3.1 -->
+	<script defer src="js/libs/matter.js"></script> <!-- 0.14.2 -->
+	<script defer src="js/libs/p5.js"></script> <!-- 0.8.0 -->
 	
 	<!--+ presets +-->
 	<script type="module" src="js/presets/module_setup_presets.js"></script>
@@ -31,10 +32,11 @@
 	<!--+ game +-->
 	<script type="module" src="js/interface.js"></script>
 	<script type="module" src="js/main.js"></script>
+	
 </head>
 <body>
-	<canvas id="canvas"></canvas>
+	<!-- <canvas id="canvas"></canvas> -->
 	<button id="new_ship">CHANGE MODS</button>
-	<textarea placeholder="a" id="new_ship_code" rows="10" cols="20"></textarea>
+	<textarea placeholder="Write your ship design here, don't forget the d variable at the beggining" id="new_ship_code" rows="10" cols="20"></textarea>
 </body>
 </html>

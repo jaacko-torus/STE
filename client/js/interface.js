@@ -35,6 +35,10 @@ there are currently 3 types:
 I use triangular coordinates for module placement:
 https://bit.ly/2IFMQpq
 
+click on module to disconnect
+click and drag to drag
+wasd and arrows to move
+
 have fun :P
 */
 

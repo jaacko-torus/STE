@@ -1,13 +1,14 @@
+import { DEBUG } from "../../../../../debug.js";
 import { Module } from "../module.js";
 import { universe } from "../../../../universe.js";
 
-let H = 0;
-
-// NOTE: thrusters need at least one clear side
+// NOTE: thrusters need at least one clear side, and it has to be the one opposite to their direction
 class Thruster extends Module {
 	constructor(world, owner, spaceship, id, position, meta, angle) {
 		super(world, owner, spaceship, id, position, meta, angle);
-
+		
+		this.max_neighbors = 1;
+		
 		this.class = "regular";
 		this.code  = "0";
 	}
@@ -26,17 +27,21 @@ class Thruster extends Module {
 	
 	event_handler(module, capsule) {
 		let speed_x, speed_y;
-		// NOTE: torque will no longer be needed once basic thrusters are implemented
-		// NOTE: torque will be needed once directional thrusters are implemented
-		// NOTE: ^ then why the fuck was I frustrated about MatterJS
 		if( this.position.d === 0) { speed_x = this.speed.x; speed_y = this.speed.y; }
 		if( this.position.d === 1) { speed_x = this.speed.x; speed_y = this.speed.y; }
 		
+		if( capsule.keys.left  && this.torque < 0 ) { module.force = { x: -this.torque * speed_x, y: -this.torque * speed_y }; }
+		if( capsule.keys.right && this.torque > 0 ) { module.force = { x:  this.torque * speed_x, y:  this.torque * speed_y }; }
+		if( capsule.keys.right ) { speed_x =  this.speed.x; speed_y =  this.speed.y; }
+		if( capsule.keys.up    ) { module.force = { x:  speed_x, y:  speed_y }; }
+		if( capsule.keys.down  ) { module.force = { x: -speed_x, y: -speed_y }; }
 		
-		if( capsule.keys.up    ) { module.force  = { x:  speed_x, y:  speed_y }; }
-		if( capsule.keys.left  ) { module.torque = -this.angularSpeed; }
-		if( capsule.keys.down  ) { module.force  = { x: -speed_x, y: -speed_y }; }
-		if( capsule.keys.right ) { module.torque =  this.angularSpeed; }
+		if(
+			DEBUG.show_active_thrusters &&
+			module.force.x !== 0 &&
+			module.force.y !== 0
+		) { this.color = ["#ff0000", 0.5]; } else
+		{ this.color = ["#333333", 0.5]; }
 	}
 }
 
