@@ -8,6 +8,7 @@ class Capsule extends Module {
 		
 		this.class = "regular";
 		this.code  = "0";
+		this.color = ["#00ff00", 0.5];
 		
 		this.keys = {
 			left  : false,
@@ -17,9 +18,7 @@ class Capsule extends Module {
 		};
 		
 		if (meta.main) { this.main = true; }
-		console.log(meta.main)
 		
-		// error when capsule is separated
 		if (owner && spaceship) {
 			universe.users.get(owner).spaceships.get(spaceship).keys = universe.users.get(owner).spaceships.get(spaceship).modules.get(id).meta.keys;
 			
@@ -47,9 +46,6 @@ class Capsule extends Module {
 	
 	event_handler(capsule) {
 		let speed_x, speed_y;
-		// NOTE: torque will no longer be needed once basic thrusters are implemented
-		// NOTE: torque will be needed once directional thrusters are implemented
-		// NOTE: ^ then why the fuck was I frustrated about MatterJS
 		if( this.position.d === 0) { speed_x = -this.speed.x; speed_y = -this.speed.y; }
 		if( this.position.d === 1) { speed_x =  this.speed.x; speed_y =  this.speed.y; }
 		

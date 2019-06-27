@@ -20,8 +20,15 @@ class Module {
 		this.level    = level;
 		this.interval = interval;
 		
-		this.position = { x, y };
-		if ( d === 1 || d === 0) { this.position.d = d; }
+		// current neighbors
+		this.neighbors = [];
+		
+		// this.position = { x, y };
+		// if ( d === 0 || d === 1 ) { this.position.d = d; }
+		// this.position.d = d;
+		this.position = { x, y, d };
+		
+		this.color = ["#333333", 0.5];
 		
 		this.velocity = { x: 0, y: 0 };
 		this.angle    = angle;
@@ -39,6 +46,7 @@ class Module {
 			universe.users.get(owner).spaceships.get(spaceship).modules.get(this.__id__).meta = this;
 		} else {
 			if(!universe.modules.has(this.__id__)) {
+				this.color = ["#ffffff", 0.9];
 				Module.add_to_list(universe.modules, this.__id__, Module.create(world, owner, spaceship, this, size));
 				universe.modules.get(this.__id__).meta = this;
 			} else { console.error("this module ID is already populated, please shift the coordinates of this module and try again"); }
@@ -69,19 +77,23 @@ class Module {
 	
 	static get w_constraints() { // TODO: maybe replace these numbers with `w_size`, `w_height`, and `w_length`, might help
 		let s = Module.w_size;
+		let h = Module.w_height;
+		let l = Module.w_length;
 		return [
-			{ x: -(     s / 8 ), y:  (s * Math.sqrt(3) / 3) - (s * Math.sqrt(3) / 8) },
-			{ x: -( 3 * s / 8 ), y: -(s * Math.sqrt(3) / 6) + (s * Math.sqrt(3) / 8) },
-			{ x: -(     s / 4 ), y: -(s * Math.sqrt(3) / 6) }
+			{ x: -(     s / 8 ), y:  l     - h / 4 },
+			{ x: -( 3 * s / 8 ), y: -l / 2 + h / 4 },
+			{ x: -(     s / 4 ), y: -l / 2 }
 		];
 	}
 
 	static get h_constraints() {
 		let s = Module.h_size;
+		let h = Module.h_height;
+		let l = Module.h_length;
 		return [
-			{ x: -(     s / 8 ), y:  (s * Math.sqrt(3) / 3) - (s * Math.sqrt(3) / 8) },
-			{ x: -( 3 * s / 8 ), y: -(s * Math.sqrt(3) / 6) + (s * Math.sqrt(3) / 8) },
-			{ x: -(     s / 4 ), y: -(s * Math.sqrt(3) / 6) }
+			{ x: -(     s / 8 ), y:  l     - h / 4 },
+			{ x: -( 3 * s / 8 ), y: -l / 2 + h / 4 },
+			{ x: -(     s / 4 ), y: -l / 2 }
 		];
 	}
 	
@@ -102,10 +114,6 @@ class Module {
 		// 	if( self.angle ===  Math.PI / 2 ) { self.angle = -Math.PI / 2; } else
 		// 	if( self.angle === -Math.PI / 2 ) { self.angle =  Math.PI / 2; }
 		// }
-		
-		// TODO: make owner and spaceship optional
-		// TODO: if spaceship not defined, then add module to world
-		// TODO: owner arg is kinda pointless, deprecate it
 		
 		let length, mass
 		if( size === 0.5 ) { length = Module.h_length; mass = 0.25; }

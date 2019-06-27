@@ -41,13 +41,13 @@ class Spaceship {
 		// add modules once spaceship is virtualy in existance
 		this.add_modules(world, owner, id, modules, this.position);
 		// NOTE: I don't like the look of the line below
+		// ^ what is the problem!?
 		World.add(world, this.composite);
 	}
 	
 	update() {
 		// it's going to loop through every capsule and get instructions
 		for( let [id, capsule] of this.capsules) { capsule.meta.update(capsule); }
-		// this.get_centroid();
 	}
 	
 	get centroid() {
@@ -57,6 +57,7 @@ class Spaceship {
 			scale centroid by inverse of scale
 			compute relation by main capsule
 		*/
+		// TODO: this method is easy but not very efficient
 		let x_pos_total = 0;
 		let y_pos_total = 0;
 		for( let [id, module] of this.modules) {
@@ -72,33 +73,42 @@ class Spaceship {
 	
 	set_torques(centroid, module, id) {
 		let motor_strength = 1; // TODO: change this later
+		let module_list = {}; // TODO: find a better name, and maybe use a map?
 		
 		let F = { x: 0, y: 0 };
 		let r = { x: 0, y: 0 };
 		
-		if(module.d === 0) { F.x =  0  ; F.y =  1; } else
-		if(module.d === 1) { F.x =  0  ; F.y = -1; } else
-		if(module.d === 2) { F.x =  0.5; F.y =  0.5 * Math.sqrt(3); } else
-		if(module.d === 3) { F.x = -0.5; F.y = -0.5 * Math.sqrt(3); } else
-		if(module.d === 4) { F.x = -0.5; F.y =  0.5 * Math.sqrt(3); } else
-		if(module.d === 5) { F.x =  0.5; F.y = -0.5 * Math.sqrt(3); }
-		
-		F.x *= motor_strength;
-		F.y *= motor_strength;
-		
-		// position : p2, centroid : p1
-		// rx = p2.x - p1.x
-		// ry = p2.y - p1.y
-		// module.meta.position.x
-		// module.meta.position.y
-		
-		r.x = module.x - centroid.x;
-		r.y = module.y - centroid.y;
-		let tau = r.x * F.y - r.y * F.x;
-		// console.log(module.position.x, module.position.y)
-		// console.log(d, F.x, F.y)
-		// console.log(r.x, r.y)
-		// console.log(tau)
+		for( let [id, module] of this.modules ) {
+			
+			switch(module.meta.category) {
+				case "Q1":
+				case "R3":
+					
+					switch(module.meta.position.d) {
+						case 0: F.x =  0  ; F.y =  1; break;
+						case 1: F.x =  0  ; F.y = -1; break;
+						case 2: F.x =  0.5; F.y =  0.5 * Math.sqrt(3); break;
+						case 3: F.x = -0.5; F.y = -0.5 * Math.sqrt(3); break;
+						case 4: F.x =  0.5; F.y = -0.5 * Math.sqrt(3); break;
+						case 5: F.x = -0.5; F.y =  0.5 * Math.sqrt(3); break;
+					}
+					
+					F.x *= motor_strength;
+					F.y *= motor_strength;
+					
+					r.x = module.meta.position.x - centroid.x;
+					r.y = module.meta.position.y - centroid.y;
+					
+					let tau = r.x * F.y - r.y * F.x;
+					
+					if( tau  <  0 ) { module.meta.torque = -1; } else
+					if( tau === 0 ) { module.meta.torque =  0; } else
+					if( tau  >  0 ) { module.meta.torque =  1; }
+					
+					module_list[id] = module.meta.torque;
+			}
+		}
+		return module_list;
 	}
 	
 	constraint_management(owner, spaceship, a, b, k, d, size) {
@@ -135,16 +145,16 @@ class Spaceship {
 			if(k === 2 && o ===  1) { a.x =  constraints[0].x; a.y =  constraints[0].y; b.x = -constraints[1].x; b.y = -constraints[1].y; }
 		}
 		
-		universe.users.get(owner).spaceships.get(spaceship).constraints.set(a.body + "|" + b.body, Constraint.create({
-			bodyA: universe.users.get(owner).spaceships.get(spaceship).modules.get(a.body), pointA: { x: a.x, y: a.y },
-			bodyB: universe.users.get(owner).spaceships.get(spaceship).modules.get(b.body), pointB: { x: b.x, y: b.y },
+		this.constraints.set(a.body + "|" + b.body, Constraint.create({
+			bodyA: this.modules.get(a.body), pointA: { x: a.x, y: a.y },
+			bodyB: this.modules.get(b.body), pointB: { x: b.x, y: b.y },
 			
 			damping: 0,
 			stiffness: 1,
 			// render: { visible: false }
 		}));
 		
-		universe.users.get(owner).spaceships.get(spaceship).constraints.get(a.body + "|" + b.body).meta = { owner, spaceship };
+		this.constraints.get(a.body + "|" + b.body).meta = { owner, spaceship };
 		
 		if(d === 0) {
 			if(k === 0 && o === -1) { a.x =  constraints[0].x; a.y =  constraints[0].y; b.x = -constraints[1].x; b.y = -constraints[1].y; }
@@ -164,16 +174,16 @@ class Spaceship {
 			if(k === 2 && o ===  1) { a.x =  constraints[1].x; a.y =  constraints[1].y; b.x = -constraints[0].x; b.y = -constraints[0].y; }
 		}
 		
-		universe.users.get(owner).spaceships.get(spaceship).constraints.set(b.body + "|" + a.body, Constraint.create({
-			bodyA: universe.users.get(owner).spaceships.get(spaceship).modules.get(a.body), pointA: { x: a.x, y: a.y },
-			bodyB: universe.users.get(owner).spaceships.get(spaceship).modules.get(b.body), pointB: { x: b.x, y: b.y },
+		this.constraints.set(b.body + "|" + a.body, Constraint.create({
+			bodyA: this.modules.get(a.body), pointA: { x: a.x, y: a.y },
+			bodyB: this.modules.get(b.body), pointB: { x: b.x, y: b.y },
 			
 			damping: 0,
 			stiffness: 1,
 			// render: { visible: false }
 		}));
 		
-		universe.users.get(owner).spaceships.get(spaceship).constraints.get(b.body + "|" + a.body).meta = { owner, spaceship };
+		this.constraints.get(b.body + "|" + a.body).meta = { owner, spaceship };
 		
 		return { a: a.body, b: b.body };
 	}
@@ -183,20 +193,15 @@ class Spaceship {
 			
 			case "Q1": // capsules
 				new Q1(world, owner, spaceship, id, { x, y, d }, {level, interval, size, main}, angle);
-				// DEBUG: this can't stand on it's owner
-				// console.log(this.centroid)
-				console.log(x, y)
-				this.set_torques(this.centroid, {x, y, d}, id);
 				break;
 			
 			case "T1": // structs
 				new T1(world, owner, spaceship, id, { x, y, d }, {level, interval, size}, angle);
 				break;
 				
-				case "R3": // thrusters
+			case "R3": // thrusters
 				// electric, no fuel <- innexpensive and it just works
 				new R3(world, owner, spaceship, id, { x, y, d }, {level, interval, size}, angle);
-				this.set_torques(this.centroid, {x, y, d}, id);
 				break;
 		}
 	}
@@ -215,7 +220,7 @@ class Spaceship {
 			let props = modules[i].pop(3);
 			let category = props[0];
 			
-			if (!props[1]) props[1] = {};
+			if (!props[1]) { props[1] = {}; };
 			({
 				level = "I",
 				interval = "Alpha",
@@ -246,9 +251,9 @@ class Spaceship {
 			this.add_by_type(world, owner, spaceship, id, category, { x: coords.x, y: coords.y, d: coords.d }, {level, interval, size, main}, coords.angle);
 		}
 		
-		// let centroid = this.centroid();
-		// this.set_torques(this.centroid);
+		this.torques = this.set_torques(this.centroid);
 		
+		// TODO: add constraints right after module was added instead of waiting for all of them to be added to world
 		this.add_constraints(world, owner, spaceship, modules, position.d, size);
 		
 		// TODO: make check to see if there are any errors in `add_by_type` and `add_constraints` and return bool
@@ -271,6 +276,12 @@ class Spaceship {
 							// if two consecutive modular number coordinates are followed by a last coordinate in both arrays which has a difference of one
 							// then the two modules are adjacent and should have a constraint
 							this.add_constraint(world, owner, spaceship, a, b, k, dir, size);
+							// add a neighbor
+							this.modules.get(a.toString()).meta.neighbors.push(b.toString());
+							this.modules.get(b.toString()).meta.neighbors.push(a.toString());
+							// console.log([a.toString(), ...this.modules.get(a.toString()).meta.neighbors]);
+							// console.log([b.toString(), ...this.modules.get(b.toString()).meta.neighbors]);
+							// TODO: create a polygon from these
 						}
 						
 						return a[k] - b[k];
@@ -288,18 +299,16 @@ class Spaceship {
 	add_constraint(world, owner, spaceship, a, b, k, dir, size) {
 		let body_pair = this.constraint_management(owner, spaceship, a, b, k, dir, size);
 		
-		Composite.add(universe.users.get(owner).spaceships.get(spaceship).composite, [ // add to spaceship.composite instead
-			universe.users.get(owner).spaceships.get(spaceship).constraints.get(body_pair.a + "|" + body_pair.b),
-			universe.users.get(owner).spaceships.get(spaceship).constraints.get(body_pair.b + "|" + body_pair.a)
+		Composite.add(this.composite, [ // add to spaceship.composite instead
+			this.constraints.get(body_pair.a + "|" + body_pair.b),
+			this.constraints.get(body_pair.b + "|" + body_pair.a)
 		]);
-		
-		// TODO: deprecate this return, it's unnecesary
-		return body_pair;
 	}
 	
-	static get_vertices(spaceship) {
-		// loop through every
-		universe.users.get(owner).spaceships.get(spaceship)
+	recalculate_d_given_neighbors(current_d, number_of_neighbors) {
+		if( current_d === 0 ) {
+			
+		}
 	}
 	
 	// origin_d represents direction of main or capsule which can be either 0, or 1;
@@ -371,6 +380,10 @@ class Spaceship {
 		// if( size = 0.5 ) { size = h_size; height = h_height; }
 		// if( size = 1   ) { size = w_size; height = w_height; }
 		
+		
+		
+		// TODO: support for 0.5 width modules
+		
 		let angle;
 		let y_offset = (1 * Math.sqrt(12) / 12) / 2;
 		
@@ -421,19 +434,20 @@ class Spaceship {
 	}
 	
 	static remove_module(world, owner, spaceship, module) {
-		// // remove body
+		// remove body
 		Composite.remove(universe.users.get(owner).spaceships.get(spaceship).composite, module, true);
 		
 		universe.users.get(owner).spaceships.get(spaceship).add_by_type(
+		// world, owner, spaceship, id, category, {x, y, d}, {level, interval, size, main}, angle
 			world, "", "", "",
 			module.meta.category,
 			{x: module.meta.position.x, y: module.meta.position.y},
 			{level: module.meta.level, interval: module.meta.interval, size: module.meta.size},
 			module.meta.angle
-		)
+		);
 		
-		// // delete virtual body
-		// // TODO: I don't like this approach, but it's what I could come up with at the moment, figure something out later
+		// delete virtual body
+		// TODO: I don't like this approach, but it's what I could come up with at the moment, figure something out later
 		universe.users.get(owner).spaceships.get(spaceship).modules.delete(module.meta.__id__);
 		universe.users.get(owner).spaceships.get(spaceship).capsules.delete(module.meta.__id__);
 		
@@ -446,6 +460,7 @@ class Spaceship {
 		
 		// delete virtual body
 		// TODO: I don't like this approach, but it's what I could come up with at the moment, figure something out later
+		// I don't know what the problem was here and in static remove_module
 		universe.users.get(owner).spaceships.get(spaceship).modules.delete(module.meta.__id__);
 		universe.users.get(owner).spaceships.get(spaceship).capsules.delete(module.meta.__id__);
 		
@@ -464,11 +479,15 @@ class Spaceship {
 	}
 	
 	static remove_constraint(owner, spaceship, id) {
+		// remove from MatterJS
 		Composite.remove(
 			universe.users.get(owner).spaceships.get(spaceship).composite,
 			universe.users.get(owner).spaceships.get(spaceship).constraints.get(id),
 			true
 		);
+		
+		// TODO: remove from virtual space
+		universe.users.get(owner).spaceships.get(spaceship).constraints.delete(id);
 	}
 }
 
