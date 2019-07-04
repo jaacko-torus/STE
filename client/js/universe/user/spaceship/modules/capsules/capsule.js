@@ -20,15 +20,21 @@ class Capsule extends Module {
 		if (meta.main) { this.main = true; }
 		
 		if (owner && spaceship) {
-			universe.users.get(owner).spaceships.get(spaceship).keys = universe.users.get(owner).spaceships.get(spaceship).modules.get(id).meta.keys;
+			// universe.users.get(owner).spaceships.get(spaceship).keys = universe.users.get(owner).spaceships.get(spaceship).modules.get(id).meta.keys;
+			universe.users.get(owner).spaceships.get(spaceship).keys = universe.users.get(owner).spaceships.get(spaceship).modules.get(id).keys;
 			
+			// add_to_list(
+			// 	universe.users.get(owner).spaceships.get(spaceship).capsules,
+			// 	id,
+			// 	universe.users.get(owner).spaceships.get(spaceship).modules.get(id)
+			// );
+			
+			// universe.users.get(owner).spaceships.get(spaceship).capsules.get(id).meta = this;
 			add_to_list(
 				universe.users.get(owner).spaceships.get(spaceship).capsules,
 				id,
-				universe.users.get(owner).spaceships.get(spaceship).modules.get(id)
+				this
 			);
-			
-			universe.users.get(owner).spaceships.get(spaceship).capsules.get(id).meta = this;
 		}
 	}
 	
@@ -49,13 +55,13 @@ class Capsule extends Module {
 		if( this.position.d === 0) { speed_x = -this.speed.x; speed_y = -this.speed.y; }
 		if( this.position.d === 1) { speed_x =  this.speed.x; speed_y =  this.speed.y; }
 		
-		if( this.keys.up    ) { capsule.force  = { x:  speed_x, y:  speed_y }; }
-		if( this.keys.left  ) { capsule.torque = -this.angularSpeed; }
-		if( this.keys.down  ) { capsule.force  = { x: -speed_x, y: -speed_y }; }
-		if( this.keys.right ) { capsule.torque =  this.angularSpeed; }
+		if( this.keys.up    ) { capsule.Matter.force  = { x:  speed_x, y:  speed_y }; }
+		if( this.keys.left  ) { capsule.Matter.torque = -this.angularSpeed; }
+		if( this.keys.down  ) { capsule.Matter.force  = { x: -speed_x, y: -speed_y }; }
+		if( this.keys.right ) { capsule.Matter.torque =  this.angularSpeed; }
 		
 		for( let [id, module] of universe.users.get(this.owner).spaceships.get(this.spaceship).modules) {
-			if(module.meta.category === "R3") { module.meta.event_handler(module, this); }
+			if(module.category === "R3") { module.event_handler(module, this); }
 		}
 	}
 	

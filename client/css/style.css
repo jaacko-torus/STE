@@ -1,6 +1,6 @@
 * {
 	margin: 0;
-	overflow: hidden;
+	/* padding: 0; */
 }
 
 body {
@@ -9,12 +9,15 @@ body {
 	height: 100vh;
 	grid-template-columns: 2fr 2fr 1fr 1fr;
 	grid-template-rows: 7fr 1fr;
+	
+	overflow: hidden;
 }
 
 canvas {
-	z-index: 0;
+	z-index: -1;
 	grid-column: 1 / 4;
 	grid-row: 1 / 8;
+	
 }
 
 #new_ship {

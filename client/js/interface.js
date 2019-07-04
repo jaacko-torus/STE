@@ -1,5 +1,9 @@
+import { datGUI_builder } from "./helper/helper.js";
+
 import { load, reset } from "./universe/user/spaceship/spaceship.js";
 import { universe } from "./universe/universe.js";
+import { DEBUG } from "./debug.js";
+
 
 function interface_script(world, Runner, runner) {
 	$(document).ready(() => {
@@ -46,11 +50,8 @@ have fun :P
 
 [  1,  0,  0, ["T1"] ],
 [  0,  0,  1, ["T1"] ]
-`);
-		
-		// $("#new_ship_code").on("click", function() {
-		// 	if($(this).val()) { $(this).prop("placeholder", "") }
-		// });
+`
+		);
 		
 		$("#new_ship").on("click", () => {
 			reset(world, "jaacko0", "ss0");
@@ -58,9 +59,9 @@ have fun :P
 			// square brackets required for JSON parser
 			/*
 				Please submit the new ship in format:
-					[ 0], // d: 0 or 1
+					[ 0 ], // d: 0 or 1
 					[ 0, 0, 0, ["Q1", {"main": true}]], // required module
-					[ 1, 1, 1, ["R1"]], // additional modules: coordx, coordy, coordx, ["type"]
+					[ 1, 1, 1, ["R1"]], // additional modules: coord x, coord y, coord z, ["type"]
 					...
 			*/
 			let new_ship_code = `[${$("#new_ship_code").val()}]`;
@@ -81,6 +82,11 @@ have fun :P
 			console.log(universe.users.get("jaacko0").spaceships.get("ss0"));
 			// Runner.stop(runner); // TODO: add reset button, for now, just comment or uncomment this
 		});
+		
+		// let gui = new datGUI_builder(DEBUG.var, {folder_name: "Qui"});
+		// let DEBUG_var = JSON.parse(JSON.stringify(DEBUG.var));
+		let gui = new datGUI_builder(DEBUG.var);
+		if( window.gui ) { window.gui = gui; }
 	});
 }
 

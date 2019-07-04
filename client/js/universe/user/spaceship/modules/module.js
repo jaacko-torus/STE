@@ -36,19 +36,32 @@ class Module {
 		
 		this.__id__ = id || x + "," + y;
 		
+		
+		this.Matter = {};
+		
 		// add to user's spaceship unless these are not specified
 		if (owner && spaceship) {
+			// Module.add_to_list(
+			// 	universe.users.get(owner).spaceships.get(spaceship).modules,
+			// 	this.__id__,
+			// 	Module.create(world, owner, spaceship, this, size)
+			// );
+			// universe.users.get(owner).spaceships.get(spaceship).modules.get(this.__id__).meta = this;
 			Module.add_to_list(
 				universe.users.get(owner).spaceships.get(spaceship).modules,
 				this.__id__,
-				Module.create(world, owner, spaceship, this, size)
+				this
 			);
-			universe.users.get(owner).spaceships.get(spaceship).modules.get(this.__id__).meta = this;
+			// universe.users.get(owner).spaceships.get(spaceship).modules.get(this.__id__).Matter = Module.create(world, owner, spaceship, this, size);
+			this.Matter = Module.create(world, owner, spaceship, this, size);
 		} else {
 			if(!universe.modules.has(this.__id__)) {
 				this.color = ["#ffffff", 0.9];
-				Module.add_to_list(universe.modules, this.__id__, Module.create(world, owner, spaceship, this, size));
-				universe.modules.get(this.__id__).meta = this;
+				// Module.add_to_list(universe.modules, this.__id__, Module.create(world, owner, spaceship, this, size));
+				// universe.modules.get(this.__id__).meta = this;
+				Module.add_to_list(universe.modules, this.__id__, this);
+				// universe.modules.get(this.__id__).Matter = Module.create(world, owner, spaceship, this, size);
+				this.Matter = Module.create(world, owner, spaceship, this, size);
 			} else { console.error("this module ID is already populated, please shift the coordinates of this module and try again"); }
 		}
 	}
@@ -56,11 +69,10 @@ class Module {
 	update() {
 		// Set some props so that they can be read from virtual module
 		for( let [id, module] of universe.users.get(this.owner).spaceships.get(this.spaceship).modules) {
-			module.meta.position = { x: module.position.x, y: module.position.y, d: module.meta.position.d };
-			module.meta.velocity = { x: module.velocity.x, y: module.velocity.y };
+			module.position = { x: module.Matter.position.x, y: module.Matter.position.y, d: module.position.d };
+			module.velocity = { x: module.Matter.velocity.x, y: module.Matter.velocity.y };
 			
-			module.meta.angle           = module.angle;
-			module.meta.angularVelocity = module.angularVelocity;
+			module.angle = module.Matter.angle;
 		}
 	}
 	
@@ -79,6 +91,7 @@ class Module {
 		let s = Module.w_size;
 		let h = Module.w_height;
 		let l = Module.w_length;
+		
 		return [
 			{ x: -(     s / 8 ), y:  l     - h / 4 },
 			{ x: -( 3 * s / 8 ), y: -l / 2 + h / 4 },
@@ -90,6 +103,7 @@ class Module {
 		let s = Module.h_size;
 		let h = Module.h_height;
 		let l = Module.h_length;
+		
 		return [
 			{ x: -(     s / 8 ), y:  l     - h / 4 },
 			{ x: -( 3 * s / 8 ), y: -l / 2 + h / 4 },
@@ -118,6 +132,7 @@ class Module {
 		let length, mass
 		if( size === 0.5 ) { length = Module.h_length; mass = 0.25; }
 		if( size === 1   ) { length = Module.w_length; mass = 1   ; }
+		// let module_body = Bodies.polygon(module.Matter.position.x, module.Matter.position.y, 3, length, { angle: module.Matter.angle, mass });
 		let module_body = Bodies.polygon(module.position.x, module.position.y, 3, length, { angle: module.angle, mass });
 		
 		// add to user's spaceship unless these are not specified

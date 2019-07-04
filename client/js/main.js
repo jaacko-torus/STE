@@ -1,8 +1,8 @@
-function hexAlpha([hex, alpha]) { // p5 extention
-	var c = color(hex);
-	// return color("rgba(" +  [red(c), green(c), blue(c), alpha].join(",") + ")");
-	return color(`rgba(${[red(c), green(c), blue(c), alpha].join(",")})`);
-}
+// function hexAlpha([hex, alpha]) { // p5 extention
+// 	var c = color(hex);
+// 	// return color("rgba(" +  [red(c), green(c), blue(c), alpha].join(",") + ")");
+// 	return color(`rgba(${[red(c), green(c), blue(c), alpha].join(",")})`);
+// }
 
 
 
@@ -24,7 +24,9 @@ const World           = Matter.World;
 // const Composites      = Matter.Composites;
 
 
-// maybe use es6 modules?
+// helper functions
+import { hexAlpha } from "./helper/helper.js";
+
 // presets
 import * as module_preset from "./presets/module_setup_presets.js";
 
@@ -78,23 +80,24 @@ function setup() {
 	
 	new User("jaacko0", "jaacko");
 	new Spaceship(
-			world,
-			"jaacko0",
-			"ss0",
-			// { x: 200, y: 300, d: 1 },
-			{ x: 0, y: 0, d: 0 },
-			[ // modules
-				// ordered by y, z, x
-				// ...module_preset_d1_single
-				// ...module_preset_d1_dt
-				// ...module_preset_d0_5x5
-				// ...module_preset.module_preset_d1_5x5
-				...module_preset.module_preset_d0_cool_ship
-			],
-		);
-		
-		ss = universe.users.get("jaacko0").spaceships.get("ss0");
-		window.ss = ss;
+		world,
+		"jaacko0",
+		"ss0",
+		// { x: 200, y: 300, d: 1 },
+		// { x: 0, y: 0, d: 1 }, // position
+		{ x: 5, y: 5 }, // position
+		[ // modules
+			// ordered by y, z, x
+			// ...module_preset_d1_single
+			// ...module_preset_d1_dt
+			// ...module_preset.module_preset_d0_5x5
+			...module_preset.module_preset_d1_5x5
+			// ...module_preset.module_preset_d0_cool_ship
+		]
+	);
+	
+	ss = universe.users.get("jaacko0").spaceships.get("ss0");
+	window.ss = ss;
 	console.log(ss);
 	
 	
@@ -123,15 +126,15 @@ function setup() {
 		
 		if (
 			module &&
-			module.meta.owner === "jaacko0" &&
-			module.meta.spaceship === "ss0"
+			module.owner === "jaacko0" &&
+			module.spaceship === "ss0"
 		) {
 			// NOTE: erase is remove from world, while remove is remove from ship
 			
 			// erase selected module
-			if (  DEBUG.erase_mode ) { Spaceship.erase_module(world, "jaacko0", module.meta.spaceship, module); }
+			if (  DEBUG.erase_mode ) { Spaceship.erase_module(world, "jaacko0", module.spaceship, module); }
 			// remove selected module
-			if ( !DEBUG.erase_mode ) { Spaceship.remove_module(world, "jaacko0", module.meta.spaceship, module); }
+			if ( !DEBUG.erase_mode ) { Spaceship.remove_module(world, "jaacko0", module.spaceship, module); }
 		}
 	});
 	
@@ -172,109 +175,75 @@ function setup() {
 }
 
 
-
-
 function draw() {
 	background("#111111");
-	noStroke();
-	
-	// default
-	fill(hexAlpha("#ffffff", 1));
+	reset_drawing_defaults();
 	
 	// global modules
-	for ( let [id, module] of universe.modules ) {
-		
-		fill(hexAlpha(module.meta.color));
-		
-		// TODO: calculate vertices from my own side instead of relying on Matter.JS so much
-		triangle(
-			module.vertices[0].x, module.vertices[0].y,
-			module.vertices[1].x, module.vertices[1].y,
-			module.vertices[2].x, module.vertices[2].y
-		);
-		
-		strokeWeight(1);
-		stroke(hexAlpha(["#ffffff", 1]));
-		
-		line(
-			module.meta.position.x,
-			module.meta.position.y,
-			
-			// TODO: this only applies to d = 0 || 1
-			module.meta.position.x + cos(module.meta.angle) * (w_height - w_length),
-			module.meta.position.y + sin(module.meta.angle) * (w_height - w_length)
-		);
-	}
+	draw_modules(universe.modules);
 	
 	// spaceships modules
 	for ( let [user_id, user] of universe.users ) {
 		for ( let [spaceship_id, spaceship] of user.spaceships) {
-			for ( let [module_id, module] of spaceship.modules) {
-				
-				fill(hexAlpha(module.meta.color));
-				
-				// TODO: calculate vertices from my own side instead of relying on Matter.JS so much
-				// TODO: show stroke if show individual modules is true
-				noStroke();
-				if(DEBUG.show_individual_modules) {
-					strokeWeight(2);
-					stroke(hexAlpha(["#ffffff", 0.5]));
-				}
-				triangle(
-					module.vertices[0].x, module.vertices[0].y,
-					module.vertices[1].x, module.vertices[1].y,
-					module.vertices[2].x, module.vertices[2].y
-				)
-				
-				
-				// DEBUG: currently module.meta.angle just keeps going up, redefine it as (angle % (2*Math.PI))
-				if( DEBUG.show_angle_indicators ) {
-					strokeWeight(1);
-					stroke(hexAlpha(["#ffffff", 1]));
-					
-					line(
-						module.meta.position.x,
-						module.meta.position.y,
-						
-						// TODO: this only applies to d = 0 || 1
-						module.meta.position.x + cos(module.meta.angle) * (w_height - w_length),
-						module.meta.position.y + sin(module.meta.angle) * (w_height - w_length)
-					);
-				}
-				
-				
-				// TODO: if d variable indicator is true
-				textFont(font.new_courier);
-				// textSize()
-				textAlign(CENTER, CENTER);
-				// text(module.meta.position.d, module.meta.position.x, module.meta.position.y);
-				text(module.meta.neighbors.length, module.meta.position.x, module.meta.position.y);
-			}
+			reset_drawing_defaults();
+			draw_modules(spaceship.modules);
 			
-			if(DEBUG.show_constraints) {
-				for ( let [constraint_id, constraint] of spaceship.constraints ) {
-					// TODO: again, stop being so reliant on MatterJS
-					
-					let a = {
-						x: constraint.bodyA.meta.position.x + constraint.pointA.x,
-						y: constraint.bodyA.meta.position.y + constraint.pointA.y
-					};
-					let b = {
-						x: constraint.bodyB.meta.position.x + constraint.pointB.x,
-						y: constraint.bodyB.meta.position.y + constraint.pointB.y
-					};
-					let midpoint = {
-						x: (a.x + b.x) / 2,
-						y: (a.y + b.y) / 2
-					}
-					
-					strokeWeight(0.5);
-					stroke(hexAlpha(["#ffffff", 0.7]))
-					fill(hexAlpha(["#ffffff", 0.5]));
-					circle(midpoint.x, midpoint.y, 4)
-				}
-			}
+			reset_drawing_defaults();
+			DEBUG.show_constraints(spaceship.constraints);
+			
+			reset_drawing_defaults();
+			DEBUG.show_centroid(spaceship.centroid);
 		}
+	}
+}
+
+
+
+
+
+function reset_drawing_defaults() {
+	// default
+	noStroke();
+	fill(hexAlpha("#ffffff", 1));
+	textFont(font.new_courier);
+	// textSize()
+	textAlign(CENTER, CENTER);
+}
+
+
+
+
+function draw_modules(map) {
+	for ( let [module_id, module] of map) {
+		
+		// use module color
+		
+		reset_drawing_defaults();
+		fill(hexAlpha(module.color));
+		DEBUG.show_individual_modules();
+		
+		// TODO: calculate vertices from my own side instead of relying on Matter.JS so much
+		triangle(
+			module.Matter.vertices[0].x, module.Matter.vertices[0].y,
+			module.Matter.vertices[1].x, module.Matter.vertices[1].y,
+			module.Matter.vertices[2].x, module.Matter.vertices[2].y
+		)
+		
+		reset_drawing_defaults();
+		DEBUG.show_angle_indicators(module, w_height, w_length);
+		
+		
+		reset_drawing_defaults();
+		DEBUG.module_text(font, module);
+		
+		// reset_drawing_defaults();
+		// DEBUG.show_d_variable(font, module);
+		
+		// reset_drawing_defaults();
+		// DEBUG.show_id(font, module);
+		
+		// reset_drawing_defaults();
+		// DEBUG.show_neighbor_number(font, module);
 	}
 }
 
@@ -283,6 +252,7 @@ function draw() {
 
 function windowResized() { resizeCanvas(windowWidth, windowHeight); }
 
+// Making sure P5 can use these functions
 window.preload = preload;
 window.setup = setup;
 window.draw = draw;
