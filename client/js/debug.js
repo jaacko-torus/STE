@@ -76,6 +76,9 @@ const DEBUG = {
 		textSize(9);
 		textStyle(BOLD);
 		textAlign(CENTER, CENTER);
+		
+		// if(!module.owner) { console.log(module); }
+		
 		text(module.__id__, module.position.x, module.position.y);
 	},
 	
@@ -121,8 +124,8 @@ const DEBUG = {
 	
 	var: {
 		// "none", "id", "neighbor number", "d variable"
-		module_text : ["id", ["none", "id", "neighbor number", "d variable"]],
-		show_individual_modules : true  ,
+		module_text : ["none", ["none", "id", "neighbor number", "d variable"]],
+		show_individual_modules : false ,
 		show_angle_indicators   : false ,
 		show_constraints        : false ,
 		show_centroid           : false ,

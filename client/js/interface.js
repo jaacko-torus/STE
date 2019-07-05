@@ -15,19 +15,18 @@ function interface_script(world, Runner, runner) {
 // and erase these after you read them
 
 /*
-this is the \`d\` variable
-it changes the direction of the y axis
-
-0 is down
-1 is up
-*/
-[ 0 ],
-
-/*
 this is the main module
-you shouldn't mess with this
+it's characterized with
+ - the Q1 category
+ - main: true
+there are only supposed to be one of these
+
+grid.d refers to the direction of the y axis
+if d: 0 -> y axis point up (like in the link below)
+if d: 1 -> y axis point down
 */
-[  0,  0,  0, ["Q1", {"main": true}] ],
+
+[ 0, 0, 0, [ "Q1", { "main": true, "grid": { "d": 0 } } ] ],
 
 /*
 these are the modules
@@ -48,10 +47,9 @@ wasd and arrows to move
 have fun :P
 */
 
-[  0,  1,  0, ["T1"] ],
-
-[  1,  0,  0, ["T1"] ],
-[  0,  0,  1, ["T1"] ]
+[ 0, 1, 0, ["T1"] ],
+[ 1, 0, 0, ["R3"] ],
+[ 0, 0, 1, ["R3"] ]
 `
 		);
 		
@@ -59,24 +57,16 @@ have fun :P
 			reset(world, "jaacko0", "ss0");
 			
 			// square brackets required for JSON parser
-			/*
-				Please submit the new ship in format:
-					[ 0 ], // d: 0 or 1
-					[ 0, 0, 0, ["Q1", {"main": true}]], // required module
-					[ 1, 1, 1, ["R1"]], // additional modules: coord x, coord y, coord z, ["type"]
-					...
-			*/
 			let new_ship_code = `[${$("#new_ship_code").val()}]`;
 			
 			let new_ship_JSON = JSON.parse(new_ship_code);
 			// I have to deal with this ugly notation bc all the array elements have to be surrounded by an array for the JSON parser
-			let new_ship_d = new_ship_JSON.shift()[0];
 			
 			load( // TODO: add more props here, to make it more fancy :P
 				world,
 				"jaacko0",
 				"ss0",
-				new_ship_d,
+				// new_ship_d,
 				new_ship_JSON
 			);
 			

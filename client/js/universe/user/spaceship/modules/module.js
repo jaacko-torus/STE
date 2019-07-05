@@ -41,39 +41,31 @@ class Module {
 		
 		// add to user's spaceship unless these are not specified
 		if (owner && spaceship) {
-			// Module.add_to_list(
-			// 	universe.users.get(owner).spaceships.get(spaceship).modules,
-			// 	this.__id__,
-			// 	Module.create(world, owner, spaceship, this, size)
-			// );
-			// universe.users.get(owner).spaceships.get(spaceship).modules.get(this.__id__).meta = this;
 			Module.add_to_list(
 				universe.users.get(owner).spaceships.get(spaceship).modules,
 				this.__id__,
 				this
 			);
-			// universe.users.get(owner).spaceships.get(spaceship).modules.get(this.__id__).Matter = Module.create(world, owner, spaceship, this, size);
 			this.Matter = Module.create(world, owner, spaceship, this, size);
+			this.Matter.meta = {
+				owner     : this.owner,
+				spaceship : this.spaceship,
+				__id__    : this.__id__
+			};
 		} else {
 			if(!universe.modules.has(this.__id__)) {
-				this.color = ["#ffffff", 0.9];
-				// Module.add_to_list(universe.modules, this.__id__, Module.create(world, owner, spaceship, this, size));
-				// universe.modules.get(this.__id__).meta = this;
+				this.color = ["#000000", 1]; // <- for now so that I can look at the text
 				Module.add_to_list(universe.modules, this.__id__, this);
-				// universe.modules.get(this.__id__).Matter = Module.create(world, owner, spaceship, this, size);
 				this.Matter = Module.create(world, owner, spaceship, this, size);
 			} else { console.error("this module ID is already populated, please shift the coordinates of this module and try again"); }
 		}
 	}
 	
 	update() {
-		// Set some props so that they can be read from virtual module
-		for( let [id, module] of universe.users.get(this.owner).spaceships.get(this.spaceship).modules) {
-			module.position = { x: module.Matter.position.x, y: module.Matter.position.y, d: module.position.d };
-			module.velocity = { x: module.Matter.velocity.x, y: module.Matter.velocity.y };
-			
-			module.angle = module.Matter.angle;
-		}
+		// DEBUG: too much recursion, go to capsule update()
+		this.position = { x: this.Matter.position.x, y: this.Matter.position.y, d: this.position.d };
+		this.velocity = { x: this.Matter.velocity.x, y: this.Matter.velocity.y };
+		this.angle = this.Matter.angle;
 	}
 	
 	// size refers to the size of a single side of the triangle

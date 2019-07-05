@@ -28,10 +28,8 @@ class Spaceship {
 		this.owner = owner;
 		this.main  = undefined;
 		
-		// this.position = { x: position.x, y: position.y, d: position.d };
 		this.position = { x: position.x, y: position.y };
 		// this.grid = { d: grid.d }
-		
 		// this.angle = angle;
 		
 		this.keys = {};
@@ -45,8 +43,6 @@ class Spaceship {
 		add_to_list(universe.users.get(owner).spaceships, id, this);
 		
 		// add modules once spaceship is virtualy in existance
-		// Spaceship.load(world, this.owner, id, this.position.d, modules);
-		// Spaceship.load(world, this.owner, id, this.grid.d, modules);
 		Spaceship.load(world, this.owner, id, modules);
 		
 		// NOTE: I don't like the look of the line below
@@ -55,7 +51,7 @@ class Spaceship {
 	}
 	
 	// it's going to loop through every capsule and get instructions
-	update() { for( let [id, capsule] of this.capsules) { capsule.update(capsule); } }
+	update() { for( let [id, capsule] of this.capsules) { capsule.update(); } }
 	
 	get centroid() {
 		/* TODO:
@@ -180,8 +176,7 @@ class Spaceship {
 			bodyB: this.modules.get(b.body).Matter, pointB: { x: b.x, y: b.y },
 			
 			damping: 0,
-			stiffness: 1,
-			// render: { visible: false }
+			stiffness: 1
 		}));
 		
 		this.constraints.get(a.body + "|" + b.body).meta = { owner, spaceship };
@@ -230,8 +225,7 @@ class Spaceship {
 			bodyB: this.modules.get(b.body).Matter, pointB: { x: b.x, y: b.y },
 			
 			damping: 0,
-			stiffness: 1,
-			// render: { visible: false }
+			stiffness: 1
 		}));
 		
 		this.constraints.get(b.body + "|" + a.body).meta = { owner, spaceship };
@@ -263,10 +257,6 @@ class Spaceship {
 		let coord_list = [];
 		
 		for(let i = 0; i < modules.length; i++) {
-			// if (modules[i][3][1] && modules[i][3][1].main) {
-				// 	console.log(modules[i][3][1].main);
-				// }
-				
 				// fourth item in every module indicates it's category, remove it and set `category` to it
 			let props = modules[i].pop(3);
 			let category = props[0];
@@ -469,7 +459,6 @@ class Spaceship {
 		// add modules once spaceship is virtualy in existance
 		let grid = {};
 		for(let i = 0; i < modules.length; i++) {
-			// console.log(modules[i][3][1].main)
 			if( modules[i][3][1] && modules[i][3][1].main ) { grid = modules[i][3][1].grid }
 		}
 		
@@ -479,7 +468,6 @@ class Spaceship {
 			spaceship,
 			
 			grid,
-			// universe.users.get(owner).spaceships.get(spaceship).grid,
 			
 			modules,
 			universe.users.get(owner).spaceships.get(spaceship).position
@@ -496,9 +484,16 @@ class Spaceship {
 		universe.users.get(owner).spaceships.get(spaceship).constraints.clear();
 	}
 	
-	static remove_module(world, owner, spaceship, module) {
+	static remove_module(world, owner, spaceship, id) {
+		let module = universe.users.get(owner).spaceships.get(spaceship).modules.get(id);
+		let MatterModule = universe.users.get(owner).spaceships.get(spaceship).modules.get(id).Matter;
+		
 		// remove body
-		Composite.remove(universe.users.get(owner).spaceships.get(spaceship).composite, module, true);
+		Composite.remove(
+			universe.users.get(owner).spaceships.get(spaceship).composite,
+			MatterModule,
+			true
+		);
 		
 		universe.users.get(owner).spaceships.get(spaceship).add_by_type(
 		// world, owner, spaceship, id, category, {x, y, d}, {level, interval, size, main}, angle
@@ -511,23 +506,31 @@ class Spaceship {
 		
 		// delete virtual body
 		// TODO: I don't like this approach, but it's what I could come up with at the moment, figure something out later
-		universe.users.get(owner).spaceships.get(spaceship).modules.delete(module.__id__);
-		universe.users.get(owner).spaceships.get(spaceship).capsules.delete(module.__id__);
+		universe.users.get(owner).spaceships.get(spaceship).modules.delete(id);
+		universe.users.get(owner).spaceships.get(spaceship).capsules.delete(id);
 		
-		Spaceship.remove_constraints(owner, spaceship, module.__id__);
+		Spaceship.remove_constraints(owner, spaceship, id);
 	}
 	
-	static erase_module(world, owner, spaceship, module) {
-		// erase body
-		Composite.remove(universe.users.get(owner).spaceships.get(spaceship).composite, module, true);
+	static erase_module(world, owner, spaceship, id) {
+		
+		let module = universe.users.get(owner).spaceships.get(spaceship).modules.get(id);
+		let MatterModule = universe.users.get(owner).spaceships.get(spaceship).modules.get(id).Matter;
+		
+		// remove body
+		Composite.remove(
+			universe.users.get(owner).spaceships.get(spaceship).composite,
+			MatterModule,
+			true
+		);
 		
 		// delete virtual body
 		// TODO: I don't like this approach, but it's what I could come up with at the moment, figure something out later
 		// I don't know what the problem was here and in static remove_module
-		universe.users.get(owner).spaceships.get(spaceship).modules.delete(module.__id__);
-		universe.users.get(owner).spaceships.get(spaceship).capsules.delete(module.__id__);
+		universe.users.get(owner).spaceships.get(spaceship).modules.delete(id);
+		universe.users.get(owner).spaceships.get(spaceship).capsules.delete(id);
 		
-		Spaceship.remove_constraints(owner, spaceship, module.__id__);
+		Spaceship.remove_constraints(owner, spaceship, id);
 	}
 	
 	static remove_constraints(owner, spaceship, module_id) {
@@ -537,8 +540,6 @@ class Spaceship {
 		for(let [id, contraint] of universe.users.get(owner).spaceships.get(spaceship).constraints) {
 			if (id.includes(module_id)) { Spaceship.remove_constraint(owner, spaceship, id); /*constraints.push(id);*/ }
 		}
-		
-		// remove_constraint(constraints)
 	}
 	
 	static remove_constraint(owner, spaceship, id) {

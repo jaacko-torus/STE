@@ -1,6 +1,5 @@
 * {
 	margin: 0;
-	/* padding: 0; */
 }
 
 body {
@@ -14,7 +13,6 @@ body {
 }
 
 canvas {
-	z-index: -1;
 	grid-column: 1 / 4;
 	grid-row: 1 / 8;
 	
