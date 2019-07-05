@@ -1,12 +1,3 @@
-// function hexAlpha([hex, alpha]) { // p5 extention
-// 	var c = color(hex);
-// 	// return color("rgba(" +  [red(c), green(c), blue(c), alpha].join(",") + ")");
-// 	return color(`rgba(${[red(c), green(c), blue(c), alpha].join(",")})`);
-// }
-
-
-
-
 // Matter modules
 const Engine          = Matter.Engine;
 // const Render          = Matter.Render;
@@ -87,12 +78,13 @@ function setup() {
 		// { x: 0, y: 0, d: 1 }, // position
 		{ x: 5, y: 5 }, // position
 		[ // modules
-			// ordered by y, z, x
-			// ...module_preset_d1_single
-			// ...module_preset_d1_dt
-			// ...module_preset.module_preset_d0_5x5
-			...module_preset.module_preset_d1_5x5
-			// ...module_preset.module_preset_d0_cool_ship
+			// ordered by y, z, x in file since it's easier
+			// ...module_preset.d0_single
+			// ...module_preset.d1_single
+			// ...module_preset.d1_dt
+			// ...module_preset.d0_5x5
+			// ...module_preset.d1_5x5
+			...module_preset.d0_cool_ship
 		]
 	);
 	

@@ -134,8 +134,6 @@ class Spaceship {
 		a = { x: undefined, y: undefined, body: a.toString() };
 		b = { x: undefined, y: undefined, body: b.toString() };
 		
-		console.log(a.body)
-		
 		// TODO: maybe find some pattern here so that I can reduce the size of this shit while keeping the readeability
 		
 		if(d === 0) {

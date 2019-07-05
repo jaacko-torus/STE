@@ -4,6 +4,8 @@ import { load, reset } from "./universe/user/spaceship/spaceship.js";
 import { universe } from "./universe/universe.js";
 import { DEBUG } from "./debug.js";
 
+// presets
+import * as module_preset from "./presets/module_setup_presets.js";
 
 function interface_script(world, Runner, runner) {
 	$(document).ready(() => {
@@ -83,8 +85,6 @@ have fun :P
 			// Runner.stop(runner); // TODO: add reset button, for now, just comment or uncomment this
 		});
 		
-		// let gui = new datGUI_builder(DEBUG.var, {folder_name: "Qui"});
-		// let DEBUG_var = JSON.parse(JSON.stringify(DEBUG.var));
 		let gui = new datGUI_builder(DEBUG.var);
 		if( window.gui ) { window.gui = gui; }
 	});

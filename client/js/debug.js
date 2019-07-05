@@ -13,7 +13,8 @@ const DEBUG = {
 		// }
 		
 		
-		let option = DEBUG.var.module_text;
+		// let option = DEBUG.var.module_text[0]; // use this without gui
+		let option = DEBUG.var.module_text; // use this with the gui
 		
 		// "none", "id", "neighbor number", "d variable"
 		switch (option) {
@@ -119,12 +120,8 @@ const DEBUG = {
 	erase_mode: false,
 	
 	var: {
-		// show_id                 : false,
-		// show_neighbor_number    : false,
-		// show_d_variable         : bool,
 		// "none", "id", "neighbor number", "d variable"
-		module_text : ["none", ["none", "id", "neighbor number", "d variable"]],
-		
+		module_text : ["id", ["none", "id", "neighbor number", "d variable"]],
 		show_individual_modules : true  ,
 		show_angle_indicators   : false ,
 		show_constraints        : false ,

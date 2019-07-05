@@ -13,10 +13,10 @@
 	with 5 crossing triangle as it's base and a height of 5 triangle heights stacked on top
 */
 
-let module_preset_d0_single = [[0,0,0,["Q1",{"main":true,"grid":{"d":0}}]]];
-let module_preset_d1_single = [[0,0,0,["Q1",{"main":true,"grid":{"d":1}}]]];
+let d0_single = [[0,0,0,["Q1",{"main":true,"grid":{"d":0}}]]];
+let d1_single = [[0,0,0,["Q1",{"main":true,"grid":{"d":1}}]]];
 
-let module_preset_d1_dt = [ // double thruster
+let d1_dt = [ // double thruster
 	[  0   ,  0   ,  0   , ["Q1", { "size": 0.5, "main": true }] ],
 	[  0.5 ,  1   ,  0   , ["R3", { "size": 0.5 }] ],
 	[  0   ,  1   ,  0.5 , ["R3", { "size": 0.5 }] ],
@@ -25,7 +25,7 @@ let module_preset_d1_dt = [ // double thruster
 	[ -1   ,  1   ,  1   , ["T1", { "size": 0.5 }] ],
 ]
 
-let module_preset_d0_5x5 = [
+let d0_5x5 = [
 	[  0,  0,  0,
 		[
 			"Q1",
@@ -73,7 +73,7 @@ let module_preset_d0_5x5 = [
 	// two bottom ones are thrusters
 ];
 
-let module_preset_d1_5x5 = [
+let d1_5x5 = [
 	[  0,  0,  0,
 		[
 			"Q1",
@@ -121,7 +121,7 @@ let module_preset_d1_5x5 = [
 	// three bottom modules are thrusters
 ];
 
-let module_preset_d0_cool_ship = [
+let d0_cool_ship = [
 	[  0,  0,  0,
 		[
 			"Q1",
@@ -160,11 +160,10 @@ let module_preset_d0_cool_ship = [
 ];
 
 export {
-	module_preset_d0_5x5,
-	module_preset_d0_single,
-	module_preset_d1_5x5,
-	module_preset_d1_single,
-	
-	module_preset_d1_dt,
-	module_preset_d0_cool_ship
+	d0_single,
+	d1_single,
+	d1_dt,
+	d0_5x5,
+	d1_5x5,
+	d0_cool_ship
 };
