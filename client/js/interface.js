@@ -10,7 +10,10 @@ import * as module_preset from "./presets/module_setup_presets.js";
 function interface_script(world, Runner, runner) {
 	$(document).ready(() => {
 		$("#new_ship_code").val(
-`// comments don't work
+`// touch modules to separate
+// wasd and arrows to move
+
+// comments don't work
 // so don't use them here
 // and erase these after you read them
 
