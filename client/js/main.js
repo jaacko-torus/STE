@@ -74,8 +74,6 @@ function setup() {
 		world,
 		"jaacko0",
 		"ss0",
-		// { x: 200, y: 300, d: 1 },
-		// { x: 0, y: 0, d: 1 }, // position
 		{ x: 5, y: 5 }, // position
 		[ // modules
 			// ordered by y, z, x in file since it's easier
@@ -100,33 +98,33 @@ function setup() {
 	let mouse = Mouse.create(canvas.elt);
 	mouse.pixelRatio = pixelDensity();
 	
+	
 	let mouseConstraint = MouseConstraint.create(engine, {
 		mouse,
 		constraint: {
 			damping: 1,
-			stiffness: 1,
-			// render: {
-				// 	visible: true
-				// }
+			stiffness: 1
 		}
 	});
 	
 	World.add(world, mouseConstraint);
 	
 	Events.on(mouseConstraint, "mousedown", e => {
-		let module = e.source.body;
+		let MatterModule = e.source.body;
+		
 		
 		if (
-			module &&
-			module.owner === "jaacko0" &&
-			module.spaceship === "ss0"
-		) {
+			MatterModule &&
+			MatterModule.meta &&
+			MatterModule.meta.owner === "jaacko0" &&
+			MatterModule.meta.spaceship === "ss0"
+			) {
 			// NOTE: erase is remove from world, while remove is remove from ship
 			
 			// erase selected module
-			if (  DEBUG.erase_mode ) { Spaceship.erase_module(world, "jaacko0", module.spaceship, module); }
+			if (  DEBUG.var.erase_mode ) { Spaceship.erase_module(world, MatterModule.meta.owner, MatterModule.meta.spaceship, MatterModule.meta.__id__); }
 			// remove selected module
-			if ( !DEBUG.erase_mode ) { Spaceship.remove_module(world, "jaacko0", module.spaceship, module); }
+			if ( !DEBUG.var.erase_mode ) { Spaceship.remove_module(world, MatterModule.meta.owner, MatterModule.meta.spaceship, MatterModule.meta.__id__); }
 		}
 	});
 	
@@ -161,10 +159,22 @@ function setup() {
 	Events.on(engine, "beforeUpdate", event => { // update loop, 60fps, 60 counter = 1sec
 		// counter += 1;
 		ss.update();
+		for (let [module_id, module] of universe.modules) { module.update(); }
 	});
 	
 	frameRate(60);
 }
+
+
+
+
+
+
+
+
+
+
+
 
 
 function draw() {
@@ -207,9 +217,7 @@ function reset_drawing_defaults() {
 
 function draw_modules(map) {
 	for ( let [module_id, module] of map) {
-		
 		// use module color
-		
 		reset_drawing_defaults();
 		fill(hexAlpha(module.color));
 		DEBUG.show_individual_modules();
@@ -227,15 +235,6 @@ function draw_modules(map) {
 		
 		reset_drawing_defaults();
 		DEBUG.module_text(font, module);
-		
-		// reset_drawing_defaults();
-		// DEBUG.show_d_variable(font, module);
-		
-		// reset_drawing_defaults();
-		// DEBUG.show_id(font, module);
-		
-		// reset_drawing_defaults();
-		// DEBUG.show_neighbor_number(font, module);
 	}
 }
 
