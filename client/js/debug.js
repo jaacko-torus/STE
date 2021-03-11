@@ -1,5 +1,6 @@
+import universe from "./universe/universe.js";
+
 import { hexAlpha } from "./helper/helper.js";
-import { universe } from "./universe/universe.js";
 
 const DEBUG = {
 	
@@ -134,4 +135,4 @@ const DEBUG = {
 	},
 };
 
-export { DEBUG };
+export default DEBUG;

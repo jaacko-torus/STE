@@ -1,5 +1,6 @@
-import { add_to_list } from "./spaceship/modules/module.js";
-import { universe } from "../universe.js";
+import universe from "../universe.js";
+
+import { add_to_list } from "./spaceship/modules/Module.js";
 
 class User {
 	constructor(id, name) {
@@ -11,6 +12,4 @@ class User {
 	}
 }
 
-export {
-	User
-};
+export default User;

@@ -1,3 +1,5 @@
+import dat from "dat.gui";
+
 let arrays = {};
 
 class datGUI_builder {
@@ -99,4 +101,4 @@ class datGUI_builder {
 
 export {
 	datGUI_builder
-}
+};

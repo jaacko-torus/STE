@@ -1,14 +1,12 @@
-import { datGUI_builder } from "./helper/helper.js";
+import $ from "jquery";
 
-import { load, reset } from "./universe/user/spaceship/spaceship.js";
-import { universe } from "./universe/universe.js";
-import { DEBUG } from "./debug.js";
+import DEBUG from "./debug";
 
-// presets
-import * as module_preset from "./presets/module_setup_presets.js";
+import { datGUI_builder } from "./helper/dat.gui";
+import { load, reset } from "./universe/user/spaceship/Spaceship";
 
 function interface_script(world, Runner, runner) {
-	$(document).ready(() => {
+	$(() => {
 		$("#new_ship_code").val(
 `// touch modules to separate
 // wasd and arrows to move
@@ -52,8 +50,7 @@ have fun :P
 
 [ 0, 1, 0, ["T1"] ],
 [ 1, 0, 0, ["R3"] ],
-[ 0, 0, 1, ["R3"] ]
-`
+[ 0, 0, 1, ["R3"] ]`
 		);
 		
 		$("#new_ship").on("click", () => {
@@ -68,7 +65,7 @@ have fun :P
 			load( // TODO: add more props here, to make it more fancy :P
 				world,
 				"jaacko0",
-				"ss0",
+				"ss0",   
 				// new_ship_d,
 				new_ship_JSON
 			);

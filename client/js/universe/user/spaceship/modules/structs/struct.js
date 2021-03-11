@@ -1,4 +1,4 @@
-import { Module } from "../module.js";
+import Module from "../Module.js";
 
 class Struct extends Module {
 	constructor(world, owner, spaceship, id, position, meta, angle) {
@@ -18,7 +18,7 @@ class T1 extends Struct {
 	}
 }
 
+export default Struct;
 export {
-	Struct,
 	T1
 };
