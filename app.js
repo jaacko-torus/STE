@@ -8,6 +8,6 @@ app.get("/", (req, res) => {
 
 app.use(express.static("client"));
 
-app.listen(process.env.PORT || 8080, () => {
+app.listen(process.env.PORT ?? 8080, () => {
 	console.log("Now listening on port 8080\n");
 });

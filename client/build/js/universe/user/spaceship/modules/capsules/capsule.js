@@ -1,6 +1,8 @@
-import universe from "../../../../universe.js";
+import { universe } from "../../../../universe.js";
 
-import Module, { add_to_list } from "../Module.js";
+import { Module, add_to_list } from "../module.js";
+
+let asd = 0;
 
 class Capsule extends Module {
 	constructor(world, owner, spaceship, id, position, meta, angle) {
@@ -99,7 +101,7 @@ class Q1 extends Capsule {
 	}
 }
 
-export default Capsule;
 export {
+	Capsule,
 	Q1
 };

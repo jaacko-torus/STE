@@ -1,8 +1,6 @@
-import DEBUG from "../../../../../debug.js";
-
-import Module from "../Module.js";
-
-import universe from "../../../../universe.js";
+import { DEBUG } from "../../../../../debug.js";
+import { Module } from "../module.js";
+import { universe } from "../../../../universe.js";
 
 // NOTE: thrusters need at least one clear side, and it has to be the one opposite to their direction
 class Thruster extends Module {
@@ -91,7 +89,7 @@ class R3 extends Thruster { // electric
 	}
 }
 
-export default Thruster;
 export {
+	Thruster,
 	R3
 };

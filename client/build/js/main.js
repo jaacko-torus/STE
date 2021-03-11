@@ -1,5 +1,19 @@
-import Matter from "matter-js";
-import p5 from "p5";
+// Matter modules
+const Engine          = Matter.Engine;
+// const Render          = Matter.Render;
+const Runner          = Matter.Runner;
+const Events          = Matter.Events;
+// const Common          = Matter.Common;
+const MouseConstraint = Matter.MouseConstraint;
+const Mouse           = Matter.Mouse;
+const World           = Matter.World;
+// const Body            = Matter.Body;
+// const Bodies          = Matter.Bodies;
+// const Constraint      = Matter.Constraint;
+// const Constraints     = Matter.Constraints;
+// const Composite       = Matter.Composite;
+// const Composites      = Matter.Composites;
+
 
 // helper functions
 import { hexAlpha } from "./helper/helper.js";
@@ -7,19 +21,19 @@ import { hexAlpha } from "./helper/helper.js";
 // presets
 import * as module_preset from "./presets/module_setup_presets.js";
 
-import universe from "./universe/universe.js";
+import { universe } from "./universe/universe.js";
 // DEBUG: this is only for debugging purposes, delete this line later
 window.universe = universe;
 
-import DEBUG from "./debug.js";
+import { DEBUG } from "./debug.js";
 window.DEBUG = DEBUG;
 
-import { w_size, w_height, w_length, h_size, h_height, h_length } from "./universe/user/spaceship/modules/Module.js";
-import { T1 } from "./universe/user/spaceship/modules/structs/Struct.js";
-import { Q1 } from "./universe/user/spaceship/modules/capsules/Capsule.js";
-import { R3 } from "./universe/user/spaceship/modules/thrusters/Thrusters.js";
-import Spaceship from "./universe/user/spaceship/Spaceship.js";
-import User from "./universe/user/User.js";
+import { w_size, w_height, w_length, h_size, h_height, h_length } from "./universe/user/spaceship/modules/module.js";
+import { T1 } from "./universe/user/spaceship/modules/structs/struct.js";
+import { Q1 } from "./universe/user/spaceship/modules/capsules/capsule.js";
+import { R3 } from "./universe/user/spaceship/modules/thrusters/thrusters.js";
+import { Spaceship } from "./universe/user/spaceship/spaceship.js";
+import { User } from "./universe/user/user.js";
 
 
 let font = {};
@@ -38,8 +52,8 @@ function setup() {
 	canvas = createCanvas(windowWidth, windowHeight);
 	
 	// create engine
-	engine = Matter.Engine.create();
-	world = engine.world;
+	engine = Engine.create();
+	world  = engine.world;
 	window.world = world;
 	
 	// set gravity to 0
@@ -47,8 +61,8 @@ function setup() {
 	engine.world.gravity.y = 0;
 	
 	// create runner for engine
-	runner = Matter.Runner.create();
-	Matter.Runner.run(runner, engine);
+	runner = Runner.create();
+	Runner.run(runner, engine);
 	
 	
 	
@@ -81,10 +95,10 @@ function setup() {
 	
 	
 	/* -- mouse controls -- */
-	let mouse = Matter.Mouse.create(canvas.elt);
+	let mouse = Mouse.create(canvas.elt);
 	mouse.pixelRatio = pixelDensity();
 	
-	let mouseConstraint = Matter.MouseConstraint.create(engine, {
+	let mouseConstraint = MouseConstraint.create(engine, {
 		mouse,
 		constraint: {
 			damping: 1,
@@ -92,9 +106,9 @@ function setup() {
 		}
 	});
 	
-	Matter.World.add(world, mouseConstraint);
+	World.add(world, mouseConstraint);
 	
-	Matter.Events.on(mouseConstraint, "mousedown", e => {
+	Events.on(mouseConstraint, "mousedown", e => {
 		let MatterModule = e.source.body;
 		
 		
@@ -141,7 +155,7 @@ function setup() {
 	
 	// NOTE: keep counter for debug purposes
 	// let counter = 0;
-	Matter.Events.on(engine, "beforeUpdate", event => { // update loop, 60fps, 60 counter = 1sec
+	Events.on(engine, "beforeUpdate", event => { // update loop, 60fps, 60 counter = 1sec
 		// counter += 1;
 		ss.update();
 		for (let [module_id, module] of universe.modules) { module.update(); }
@@ -240,4 +254,4 @@ window.windowResized = windowResized;
 import { interface_script } from "./interface.js";
 
 // DEBUG: last two argumeht are there for debugging
-interface_script(world, Matter.Runner, runner);
+interface_script(world, Runner, runner);

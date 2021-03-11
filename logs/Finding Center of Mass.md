@@ -1,4 +1,6 @@
-# Finding Center of Mass
+# Wiki
+
+## Finding Center of Mass
 
 To find the center of mass, one must find the exterior vertices
 
@@ -274,6 +276,7 @@ d:
 Instead of for every module added add to physiscs, first load the meta, then load the physics
 ```
 universe
+	modules
 	users
 		spaceships
 			capsules

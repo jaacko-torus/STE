@@ -1,12 +1,14 @@
-import $ from "jquery";
+import { datGUI_builder } from "./helper/helper.js";
 
-import DEBUG from "./debug";
+import { load, reset } from "./universe/user/spaceship/spaceship.js";
+import { universe } from "./universe/universe.js";
+import { DEBUG } from "./debug.js";
 
-import { datGUI_builder } from "./helper/dat.gui";
-import { load, reset } from "./universe/user/spaceship/Spaceship";
+// presets
+import * as module_preset from "./presets/module_setup_presets.js";
 
 function interface_script(world, Runner, runner) {
-	$(() => {
+	$(document).ready(() => {
 		$("#new_ship_code").val(
 `// touch modules to separate
 // wasd and arrows to move
