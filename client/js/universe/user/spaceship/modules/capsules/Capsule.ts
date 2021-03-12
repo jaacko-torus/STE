@@ -1,8 +1,25 @@
 import universe from "../../../../universe.js";
 
-import Module from "../Module.js";
+import Module, { IModuleConstructorParameters } from "../Module.js";
 
 import { map_set } from "../../../../../util/util.js";
+import { R3 } from "../thrusters/Thrusters.js";
+import Spaceship from "../../Spaceship.js";
+import User from "../../../User.js";
+
+// interface IModuleConstructorParameters {
+// 	world : Matter.World,
+// 	owner : string,
+// 	spaceship : string,
+// 	id : string,
+// 	position : { x : number, y : number, d : number },
+// 	meta : { level : string, interval : string, size : number, main?: boolean },
+// 	angle : number
+// }
+
+interface ICapsuleConstructorParameters extends IModuleConstructorParameters {
+	meta : { level : string, interval : string, size : number, main?: boolean }
+}
 
 class Capsule extends Module {
 	main = false;
@@ -18,33 +35,33 @@ class Capsule extends Module {
 		down  : false
 	};
 	
-	constructor(
-		world : Matter.World,
-		owner : string,
-		spaceship : string,
-		id : string,
-		position : { x : number, y : number, d : number },
-		meta : { main : boolean, level : string, interval : string, size : number },
-		angle : number
-	) {
-		super(world, owner, spaceship, id, position, meta, angle);
+	constructor(params : ICapsuleConstructorParameters) {
+		super(params);
 		
 		// this is necessary to avoid values like `1` or `"tom"` to get through
-		if (meta.main === true) {
+		if (params.meta.main === true) {
 			this.main = true;
 		}
 		
 		if (
-			owner !== undefined &&
-			spaceship !== undefined
+			params.owner !== undefined &&
+			params.spaceship !== undefined
 		) {
 			// FIXME: maybe make a function for this?
-			universe.users.get(owner).spaceships.get(spaceship).input_keys =
-				universe.users.get(owner).spaceships.get(spaceship).modules.get(id).input_keys;
+			// TODO: all of this functionality DEFINETLY needs it's own function, consider putting it in `universe.ts`
+			if (
+				universe.users.has(params.owner) &&
+				universe.users.get(params.owner)?.spaceships.has(params.spaceship) &&
+				universe.users.get(params.owner)?.spaceships.get(params.spaceship)?.input_keys
+			) {
+				(<Spaceship>(<User>universe.users.get(params.owner)).spaceships.get(params.spaceship)).input_keys =
+					(<Capsule>(<Spaceship>(<User>universe.users.get(params.owner)).spaceships.get(params.spaceship)).modules.get(params.id)).input_keys;
+			}
+			
 			
 			map_set({
-				map: universe.users.get(owner).spaceships.get(spaceship).capsules,
-				key: id,
+				map: (<Spaceship>(<User>universe.users.get(params.owner)).spaceships.get(params.spaceship)).capsules,
+				key: params.id,
 				val: this
 			});
 		}
@@ -76,15 +93,17 @@ class Capsule extends Module {
 		if (this.input_keys.up)    { this.Matter.force  = { x:  speed_x, y:  speed_y }; }
 		if (this.input_keys.down)  { this.Matter.force  = { x: -speed_x, y: -speed_y }; }
 		
-		for (let [id, module] of universe.users.get(this.owner).spaceships.get(this.spaceship).modules) {
-			if (module.category === "R3") { module.event_handler(module, this); }
+		for (let [id, module] of (<Spaceship>(<User>universe.users.get(this.owner)).spaceships.get(this.spaceship)).modules) {
+			if (module instanceof R3) {
+				module.event_handler(module, this);
+			}
 		}
 	}
 	
 	update() {
 		super.update();
 		// Set some props so that they can be read from virtual module
-		for (let [id, module] of universe.users.get(this.owner).spaceships.get(this.spaceship).modules) {
+		for (let [id, module] of (<Spaceship>(<User>universe.users.get(this.owner)).spaceships.get(this.spaceship)).modules) {
 			module.position = {
 				x: module.Matter.position.x,
 				y: module.Matter.position.y,
@@ -106,16 +125,8 @@ class Capsule extends Module {
 class Q1 extends Capsule {
 	category = "Q1";
 	
-	constructor(
-		world : Matter.World,
-		owner : string,
-		spaceship : string,
-		id : string,
-		position : { x : number, y : number, d : number },
-		meta : { main : boolean, level : string, interval : string, size : number },
-		angle : number
-	) {
-		super(world, owner, spaceship, id, position, meta, angle);
+	constructor(params : ICapsuleConstructorParameters) {
+		super(params);
 	}
 	
 	get speed() {

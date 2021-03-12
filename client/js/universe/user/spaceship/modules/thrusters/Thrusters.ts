@@ -1,23 +1,13 @@
 import DEBUG from "../../../../../debug.js";
 
-import Module from "../Module.js";
-
-import universe from "../../../../universe.js";
+import Module, { IModuleConstructorParameters } from "../Module.js";
 
 // NOTE: thrusters need at least one clear side, and it has to be the one opposite to their direction
 class Thruster extends Module {
 	max_neighbors = 1;
 	
-	constructor(
-		world : Matter.World,
-		owner : string,
-		spaceship : string,
-		id : string,
-		position : { x : number, y : number, d : number },
-		meta : { level : string, interval : string, size : number },
-		angle : number
-	) {
-		super(world, owner, spaceship, id, position, meta, angle);
+	constructor(params : IModuleConstructorParameters) {
+		super(params);
 	}
 	
 	get speed() {
@@ -37,6 +27,7 @@ class Thruster extends Module {
 	
 	event_handler(module, capsule) {
 		let speed_x, speed_y;
+		
 		if( this.position.d === 0) { speed_x = this.speed.x; speed_y = this.speed.y; }
 		if( this.position.d === 1) { speed_x = this.speed.x; speed_y = this.speed.y; }
 		
@@ -77,8 +68,8 @@ class Thruster extends Module {
 class R3 extends Thruster { // electric
 	category = "R3";
 	
-	constructor(world, owner, spaceship, id, position, meta, angle) {
-		super(world, owner, spaceship, id, position, meta, angle);
+	constructor(params : IModuleConstructorParameters) {
+		super(params);
 	}
 	
 	get speed() {

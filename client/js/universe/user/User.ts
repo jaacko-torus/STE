@@ -1,10 +1,11 @@
 import universe from "../universe.js";
 
 import { map_set } from "../../util/util.js";
+import Spaceship from "./spaceship/Spaceship.js";
 
 class User {
 	name : string;
-	spaceships = new Map();
+	spaceships = new Map<string, Spaceship>();
 	
 	constructor(id : string, name : string) {
 		this.name = name;

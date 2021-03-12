@@ -2,7 +2,7 @@ import Matter from "matter-js";
 
 import universe from "../../universe.js";
 
-import Module from "./modules/Module.js";
+import Module, { IModuleConstructorParameters } from "./modules/Module.js";
 
 import { T1 } from "./modules/structs/Struct.js";
 import Capsule, { Q1 } from "./modules/capsules/Capsule.js";
@@ -264,20 +264,21 @@ class Spaceship {
 	}
 	
 	// TODO: get a better name like `new_module_from_category`
-	add_by_type(world, owner, spaceship, id, category, {x, y, d}, {level, interval, size, main}, angle) {
+	// add_by_type(world, owner, spaceship, id, category, {x, y, d}, {level, interval, size, main}, angle) {
+	add_by_type(module_constructor_parameters : IModuleConstructorParameters & { category : string }) {
 		// FIXME: maybe use a hash for legibility?
-		switch (category) {
+		switch (module_constructor_parameters.category) {
 			
 			case "Q1": // capsules
-				new Q1(world, owner, spaceship, id, { x, y, d }, {level, interval, size, main}, angle);
+				new Q1(module_constructor_parameters);
 				break;
 			
 			case "T1": // structs
-				new T1(world, owner, spaceship, id, { x, y, d }, {level, interval, size}, angle);
+				new T1(module_constructor_parameters);
 				break;
 				
 			case "R3": // thrusters
-				new R3(world, owner, spaceship, id, { x, y, d }, {level, interval, size}, angle);
+				new R3(module_constructor_parameters);
 				break;
 			
 		}
@@ -327,7 +328,16 @@ class Spaceship {
 			// TODO: should the 50 below be hard coded? I was thinking about using that number as zoom, but thats not necesary bc of p5
 			coords = Spaceship.scale_coords(coords, 50);
 			
-			this.add_by_type(world, owner, spaceship, id, category, { x: coords.x, y: coords.y, d: coords.d }, {level, interval, size, main}, coords.angle);
+			this.add_by_type({
+				world,
+				owner,
+				spaceship,
+				id,
+				category,
+				position: { x: coords.x, y: coords.y, d: coords.d },
+				meta: { level, interval, size, main },
+				angle: coords.angle
+			});
 		}
 		
 		this.set_projected_torques(this.centroid);
@@ -547,21 +557,17 @@ class Spaceship {
 			true
 		);
 		
-		universe.users.get(owner).spaceships.get(spaceship).add_by_type(
+		universe.users.get(owner).spaceships.get(spaceship).add_by_type({
 		// world, owner, spaceship, id, category, {x, y, d}, {level, interval, size, main}, angle
-			world, "", "", "",
-			module.category,
-			{
-				x: module.position.x,
-				y: module.position.y
-			},
-			{
-				level: module.level,
-				interval: module.interval,
-				size: module.size
-			},
-			module.angle
-		);
+			world,
+			owner: "",
+			spaceship: "",
+			id: "",
+			category: module.category,
+			position: { x: module.position.x, y: module.position.y, d: -1 },
+			meta: { level: module.level, interval: module.interval, size: module.size },
+			angle: module.angle
+		});
 		
 		// delete virtual body
 		// TODO: I don't like this approach, but it's what I could come up with at the moment, figure something out later
