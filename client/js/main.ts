@@ -15,12 +15,16 @@ import config from "./util/config.js";
 import { hexAlpha } from "./util/p5.util.js";
 
 // presets
+// import spaceship_presets from "./presets/spaceship_presets.json";
+// import * as spaceship_presets from "./presets/spaceship_presets.json";
 import spaceship_presets from "./presets/spaceship_presets.json";
+
 
 let globals = {
 	universe,
 	DEBUG,
 	
+	world: null,
 	canvas: null,
 	engine: null,
 	runner: null,
@@ -33,7 +37,9 @@ let globals = {
 
 let font = {};
 
-new p5((s) => {
+type P5 = any;
+
+new p5((s : p5) => {
 	s.preload = () => {
 		config.font.set(
 			"new_courier",
@@ -232,7 +238,7 @@ function draw_modules(s, map) {
 	}
 }
 
-window.globals = globals;
+globalThis.globals = globals;
 
 // --------------------------------------------------------------------------------------------------------------------
 /* -- render -- */

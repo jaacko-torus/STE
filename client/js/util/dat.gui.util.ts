@@ -3,7 +3,10 @@ import dat from "dat.gui";
 let arrays = {};
 
 class datGUI_builder {
-	constructor(config, options) {
+	gui;
+	gui_folder;
+	
+	constructor(config, options = {}) {
 		this.gui = new dat.GUI();
 		this.build_GUI(config, options);
 		
@@ -11,10 +14,12 @@ class datGUI_builder {
 		return this.gui;
 	}
 	
-	build_GUI( config, { folder_name = "Config", remember = false } = {}) {
+	build_GUI(config, { folder_name = "Config", remember = false } = {}) {
 		this.gui_folder = this.gui.addFolder(folder_name);
 		
-		if( remember ) { this.gui.remember(config); }
+		if (remember) {
+			this.gui.remember(config);
+		}
 		
 		this.add(config, this.gui_folder);
 		
@@ -27,13 +32,13 @@ class datGUI_builder {
 		};
 		this.gui.add(gui_update, "update");
 		
-		window.gui = this.gui;
+		globalThis.gui = this.gui;
 	}
 	
 	add(obj, folder) {
 		Object.entries(obj).forEach(([key, val]) => {
 			// if starts with "_", then private, skip
-			if( key.startsWith("_") ) { return; }
+			if (key.startsWith("_")) { return; }
 			
 			switch (typeof val) {
 				

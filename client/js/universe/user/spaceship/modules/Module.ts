@@ -4,6 +4,8 @@ import universe from "../../../universe.js";
 
 import { map_set } from "../../../../util/util.js";
 
+
+
 class Module {
 	owner = "";
 	spaceship = "";
@@ -28,7 +30,20 @@ class Module {
 	
 	__id__;
 	
-	Matter = { };
+	
+	// TODO: make all the properties below
+	Matter : any & Matter.Body = {
+		meta: {
+			owner: "",
+			spaceship: undefined,
+			__id__: ""
+		},
+		position: { x: 0, y: 0 },
+		velocity: { x: 0, y: 0 },
+		force: { x: 0, y: 0 },
+		torque: 0,
+		angle: 0
+	};
 	
 	constructor(world, owner, spaceship, id, {x, y, d}, {level, interval, size}, angle = Math.PI / 2) {
 		this.owner = owner ?? "";

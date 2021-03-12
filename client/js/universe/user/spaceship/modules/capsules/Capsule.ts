@@ -21,11 +21,16 @@ class Capsule extends Module {
 	constructor(world, owner, spaceship, id, position, meta, angle) {
 		super(world, owner, spaceship, id, position, meta, angle);
 		
-		if (meta.main) {
+		// this is necessary to avoid values like `1` or `"tom"` to get through
+		if (meta.main === true) {
 			this.main = true;
 		}
 		
-		if (owner && spaceship) {
+		if (
+			owner !== undefined &&
+			spaceship !== undefined
+		) {
+			// FIXME: maybe make a function for this?
 			universe.users.get(owner).spaceships.get(spaceship).input_keys =
 				universe.users.get(owner).spaceships.get(spaceship).modules.get(id).input_keys;
 			
@@ -103,6 +108,8 @@ class Q1 extends Capsule {
 		let rate = 2 * base_rate;
 		
 		return {
+			// FIXME: type definition should say that `rate` is optional
+			get rate() { return rate; },
 			get x() { return -Math.cos(angle) * rate; },
 			get y() { return -Math.sin(angle) * rate; }
 		};
@@ -119,7 +126,10 @@ class Q1 extends Capsule {
 		super.event_handler();
 	}
 	
-	update(capsule) {
+	// FIXME: idk why this used to take a parameter
+	// update(capsule) {
+	
+	update() {
 		super.update();
 		
 		this.event_handler();

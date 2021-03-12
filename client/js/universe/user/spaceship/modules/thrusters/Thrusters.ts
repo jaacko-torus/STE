@@ -8,6 +8,8 @@ import universe from "../../../../universe.js";
 class Thruster extends Module {
 	max_neighbors = 1;
 	
+	torque;
+	
 	constructor(world, owner, spaceship, id, position, meta, angle) {
 		super(world, owner, spaceship, id, position, meta, angle);
 	}
@@ -79,6 +81,8 @@ class R3 extends Thruster { // electric
 		let rate = 4 * base_rate;
 		
 		return {
+			// TODO: rate should be optional
+			get rate() { return rate; },
 			get x() { return -Math.cos(angle) * rate; },
 			get y() { return -Math.sin(angle) * rate; }
 		};
@@ -91,8 +95,8 @@ class R3 extends Thruster { // electric
 		return rate;
 	}
 	
-	event_handler(capsule, speed_x, speed_y) {
-		super.event_handler(capsule, speed_x, speed_y);
+	event_handler(module, capsule) {
+		super.event_handler(module, capsule);
 	}
 }
 

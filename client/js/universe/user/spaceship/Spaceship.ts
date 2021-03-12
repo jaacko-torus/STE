@@ -24,6 +24,8 @@ class Spaceship {
 	
 	composite;
 	
+	projected_torques;
+	
 	constructor(world, owner, id, position, modules = [], angle = 3 * Math.PI / 2) {
 		// if(position.d === 0) { angle = 3 * Math.PI / 2; } else
 		// if(position.d === 1) { angle =     Math.PI / 2; }
@@ -86,7 +88,7 @@ class Spaceship {
 		}
 	}
 	
-	set_projected_torques(centroid, module, id) {
+	set_projected_torques(centroid) {
 		// TODO: change this later
 		let motor_strength = 1;
 		// TODO: find a better name, and maybe use a map?
@@ -311,7 +313,7 @@ class Spaceship {
 			// }
 			
 			let tri_to_sqr_coords = Spaceship.tri_to_sqr_coords( grid.d, modules[i] );
-			let coords = Spaceship.coords( position, tri_to_sqr_coords );
+			let coords = Spaceship.coords(position, tri_to_sqr_coords, 1);
 			coord_list.push({x: coords.x, y: coords.y});
 			
 			// TODO: should the 50 below be hard coded? I was thinking about using that number as zoom, but thats not necesary bc of p5

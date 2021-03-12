@@ -1,5 +1,4 @@
 let config = {
-	font: new Map()
+  font: new Map()
 };
-
 export default config;

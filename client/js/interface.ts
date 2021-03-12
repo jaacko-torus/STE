@@ -79,7 +79,10 @@ have fun :P
 		});
 		
 		let gui = new datGUI_builder(DEBUG.var);
-		if( window.gui ) { window.gui = gui; }
+		
+		if (globalThis.gui) {
+			globalThis.gui = gui;
+		}
 	});
 }
 

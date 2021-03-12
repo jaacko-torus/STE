@@ -1,15 +1,40 @@
+import * as p5 from "p5";
 import universe from "./universe/universe.js";
+import Module from "./universe/user/spaceship/modules/Module.js";
 
 import config from "./util/config.js";
 
 import { hexAlpha } from "./util/p5.util.js"
 
-const DEBUG = {
+let n = 0;
+
+const DEBUG : {
+	module_text             : (s : p5, font : p5.Font, module : Module) => void,
+	show_individual_modules : (s : p5) => void,
+	show_angle_indicators   : (s : p5, module : Module, w_height : number, w_length : number) => void,
+	show_d_variable         : (s : p5, font : p5.Font, module : Module) => void,
+	show_neighbor_number    : (s : p5, font : p5.Font, module : Module) => void,
+	show_id                 : (s : p5, font : p5.Font, module : Module) => void,
+	show_constraints        : (s : p5, constraints) => void,
+	show_centroid           : (s : p5, centroid) => void,
+	
+	show_active_thrusters : boolean,
+	erase_mode : boolean,
+	
+	var : {
+		module_text : string | (string | string[])[],
+		show_individual_modules : boolean,
+		show_angle_indicators : boolean,
+		show_constraints : boolean,
+		show_centroid : boolean,
+		show_active_thrusters : boolean,
+		erase_mode : boolean
+	}
+} = {
 	
 	// module_text(font, module, option = "none") { // option to force if necesary
 	
 	module_text(s, font, module) { // option to force if necesary
-		
 		// FIXME: idk what commend below is for?
 		// option = (option === "none" || typeof option == "undefined") ? DEBUG.var.module_text[0] : option;
 		// if( option === "none" || !option ) {
@@ -20,9 +45,9 @@ const DEBUG = {
 		// let option = DEBUG.var.module_text[0]; // use this without gui
 		let option = DEBUG.var.module_text; // use this with the gui
 		
-		// "none", "id", "neighbor number", "d variable"
 		switch (option) {
-			case "none": break;
+			case "none":
+				break;
 			case "id":
 				this.show_id(s, font, module);
 				break;
@@ -32,6 +57,8 @@ const DEBUG = {
 			case "d variable":
 				this.show_d_variable(s, font, module);
 				break;
+			default:
+				break
 		}
 	},
 	
@@ -141,7 +168,9 @@ const DEBUG = {
 	
 	var: {
 		// "none", "id", "neighbor number", "d variable"
-		module_text : ["none", ["none", "id", "neighbor number", "d variable"]],
+		// module_text_options     : ["none", "id", "neighbor number", "d variable"],
+		// module_text             : "none",
+		module_text             : ["none", ["none", "id", "neighbor number", "d variable"]],
 		show_individual_modules : false ,
 		show_angle_indicators   : false ,
 		show_constraints        : false ,
