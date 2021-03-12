@@ -36,6 +36,7 @@ class Thruster extends Module {
 		if( capsule.input_keys.right && this.torque > 0 ) { module.Matter.force = { x:  this.torque * speed_x, y:  this.torque * speed_y }; }
 		
 		
+		// FIXME: random comment below, try to figure out what it's about
 		// console.log(universe.users.get(capsule.owner).spaceships.get(capsule.spaceship).position.d)
 		// console.log(capsule.)
 		
