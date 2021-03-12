@@ -1,0 +1,8 @@
+{
+  "imports": {
+    "dat.gui": "./dat.gui.js",
+    "jquery": "./jquery.js",
+    "matter-js": "./matter-js.js",
+    "p5": "./p5.js"
+  }
+}
