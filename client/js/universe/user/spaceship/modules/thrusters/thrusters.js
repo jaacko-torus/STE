@@ -32,13 +32,12 @@ class Thruster extends Module {
 		if( this.position.d === 0) { speed_x = this.speed.x; speed_y = this.speed.y; }
 		if( this.position.d === 1) { speed_x = this.speed.x; speed_y = this.speed.y; }
 		
-		if( capsule.keys.left  && this.torque < 0 ) { module.Matter.force = { x: -this.torque * speed_x, y: -this.torque * speed_y }; }
-		if( capsule.keys.right && this.torque > 0 ) { module.Matter.force = { x:  this.torque * speed_x, y:  this.torque * speed_y }; }
+		if( capsule.input_keys.left  && this.torque < 0 ) { module.Matter.force = { x: -this.torque * speed_x, y: -this.torque * speed_y }; }
+		if( capsule.input_keys.right && this.torque > 0 ) { module.Matter.force = { x:  this.torque * speed_x, y:  this.torque * speed_y }; }
 		
 		
 		// console.log(universe.users.get(capsule.owner).spaceships.get(capsule.spaceship).position.d)
 		// console.log(capsule.)
-		
 		
 		// let spaceship_d = universe.users.get(capsule.owner).spaceships.get(capsule.spaceship).grid.d;
 		// if( spaceship_d === 0 ) {
@@ -51,8 +50,8 @@ class Thruster extends Module {
 		// }
 		
 		
-		if( capsule.keys.up   && this.position.d === 1 ) { module.Matter.force = { x: speed_x, y: speed_y }; }
-		if( capsule.keys.down && this.position.d === 0 ) { module.Matter.force = { x: speed_x, y: speed_y }; }
+		if( capsule.input_keys.up   && this.position.d === 1 ) { module.Matter.force = { x: speed_x, y: speed_y }; }
+		if( capsule.input_keys.down && this.position.d === 0 ) { module.Matter.force = { x: speed_x, y: speed_y }; }
 		
 		if(
 			DEBUG.show_active_thrusters &&

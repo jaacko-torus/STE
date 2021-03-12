@@ -16,7 +16,6 @@ class Spaceship {
 	
 	position = { x: 0, y: 0 }
 	
-	keys = {};
 	input_keys = {};
 	
 	capsules = new Map();

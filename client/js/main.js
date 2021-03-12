@@ -147,7 +147,7 @@ new p5((s) => {
 				["down",  { letter: "s", arrow: "ArrowDown"  }]
 			]).forEach((key, direction) => {
 				if (e.key.toLowerCase() === key.letter || e.key === key.arrow) {
-					spaceship.keys[direction] = pressing;
+					spaceship.input_keys[direction] = pressing;
 				}
 			});
 		}

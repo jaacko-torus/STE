@@ -11,8 +11,7 @@ class Capsule extends Module {
 	code  = "0";
 	color = ["#00ff00", 0.5];
 	
-	input_keys;
-	keys = {
+	input_keys = {
 		left  : false,
 		up    : false,
 		right : false,
@@ -27,8 +26,8 @@ class Capsule extends Module {
 		}
 		
 		if (owner && spaceship) {
-			universe.users.get(owner).spaceships.get(spaceship).keys =
-				universe.users.get(owner).spaceships.get(spaceship).modules.get(id).keys;
+			universe.users.get(owner).spaceships.get(spaceship).input_keys =
+				universe.users.get(owner).spaceships.get(spaceship).modules.get(id).input_keys;
 			
 			map_set({
 				map: universe.users.get(owner).spaceships.get(spaceship).capsules,
@@ -59,10 +58,10 @@ class Capsule extends Module {
 		if (this.position.d === 0) { speed_x = -this.speed.x; speed_y = -this.speed.y; }
 		if (this.position.d === 1) { speed_x =  this.speed.x; speed_y =  this.speed.y; }
 		
-		if (this.keys.left)  { this.Matter.torque = -this.angular_speed; }
-		if (this.keys.right) { this.Matter.torque =  this.angular_speed; }
-		if (this.keys.up)    { this.Matter.force  = { x:  speed_x, y:  speed_y }; }
-		if (this.keys.down)  { this.Matter.force  = { x: -speed_x, y: -speed_y }; }
+		if (this.input_keys.left)  { this.Matter.torque = -this.angular_speed; }
+		if (this.input_keys.right) { this.Matter.torque =  this.angular_speed; }
+		if (this.input_keys.up)    { this.Matter.force  = { x:  speed_x, y:  speed_y }; }
+		if (this.input_keys.down)  { this.Matter.force  = { x: -speed_x, y: -speed_y }; }
 		
 		for (let [id, module] of universe.users.get(this.owner).spaceships.get(this.spaceship).modules) {
 			if (module.category === "R3") { module.event_handler(module, this); }
