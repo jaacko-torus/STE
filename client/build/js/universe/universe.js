@@ -6,7 +6,10 @@
 
 let universe = {
 	modules: new Map(),
-	users: new Map()
+	users: new Map(),
+	
+	capsules: new Map(),
+	spaceships: new Map()
 };
 
-export { universe };
+export default universe;

@@ -2,37 +2,50 @@ import Matter from "matter-js";
 
 import universe from "../../universe.js";
 
-import { add_to_list, h_constraints, w_constraints, w_size, w_height, w_length, h_size, h_height, h_length } from "./modules/Module.js";
+import Module from "./modules/Module.js";
 
 import { T1 } from "./modules/structs/Struct.js";
 import { Q1 } from "./modules/capsules/Capsule.js";
 import { R3 } from "./modules/thrusters/Thrusters.js";
 
+import { map_set } from "../../../util/util.js";
+
 class Spaceship {
+	owner;
+	main = undefined;
+	
+	position = { x: 0, y: 0 }
+	
+	keys = {};
+	input_keys = {};
+	
+	capsules = new Map();
+	modules = new Map();
+	constraints = new Map();
+	
+	composite;
+	
 	constructor(world, owner, id, position, modules = [], angle = 3 * Math.PI / 2) {
 		// if(position.d === 0) { angle = 3 * Math.PI / 2; } else
 		// if(position.d === 1) { angle =     Math.PI / 2; }
 		// if(grid.d === 0) { angle = 3 * Math.PI / 2; } else
 		// if(grid.d === 1) { angle =     Math.PI / 2; }
-
 		
 		// in the spaceship class, owner refer to the user
 		this.owner = owner;
-		this.main  = undefined;
 		
-		this.position = { x: position.x, y: position.y };
+		this.position = position;
 		// this.grid = { d: grid.d }
 		// this.angle = angle;
 		
-		this.keys = {};
-		
-		this.capsules = new Map();
-		this.modules = new Map();
-		this.constraints = new Map();
-		
 		this.composite = Matter.Composite.create();
 		
-		add_to_list(universe.users.get(owner).spaceships, id, this);
+		// FIXME: this map setting should maybe be its own function
+		map_set({
+			map: universe.users.get(owner).spaceships,
+			key: id,
+			val: this
+		});
 		
 		// add modules once spaceship is virtualy in existance
 		Spaceship.load(world, this.owner, id, modules);
@@ -43,7 +56,11 @@ class Spaceship {
 	}
 	
 	// it's going to loop through every capsule and get instructions
-	update() { for( let [id, capsule] of this.capsules) { capsule.update(); } }
+	update() {
+		for (let capsule of this.capsules.values()) {
+			capsule.update();
+		}
+	}
 	
 	get centroid() {
 		/* TODO:
@@ -56,7 +73,10 @@ class Spaceship {
 		let x_pos_total = 0;
 		let y_pos_total = 0;
 		
-		for( let [id, module] of this.modules ) {
+		// FIXME: I could do it this way since it's more efficient
+		// but the centroid should only be calculated every time a module is added or subtracted only
+		// as such I think it should be fine to make it slower but more readable
+		for (let module of this.modules.values()) {
 			x_pos_total += module.position.x;
 			y_pos_total += module.position.y;
 		}
@@ -68,19 +88,24 @@ class Spaceship {
 	}
 	
 	set_projected_torques(centroid, module, id) {
-		let motor_strength = 1; // TODO: change this later
-		let module_list = {}; // TODO: find a better name, and maybe use a map?
+		// TODO: change this later
+		let motor_strength = 1;
+		// TODO: find a better name, and maybe use a map?
+		let module_list = { };
 		
+		// FIXME: don't know what `F` and `r` are
+		// due to them being use quite extensively inside later on I think leaving them named as they are should be fine
+		// But a NOTE should be added to explain what each of them mean
 		let F = { x: 0, y: 0 };
 		let r = { x: 0, y: 0 };
 		
-		for( let [id, module] of this.modules ) {
+		for (let [id, module] of this.modules) {
 			
 			switch(module.category) {
 				case "Q1":
 				case "R3":
 					
-					switch(module.position.d) {
+					switch (module.position.d) {
 						case 0: F.x =  0  ; F.y =  1; break;
 						case 1: F.x =  0  ; F.y = -1; break;
 						case 2: F.x =  0.5; F.y =  0.5 * Math.sqrt(3); break;
@@ -95,6 +120,7 @@ class Spaceship {
 					r.x = module.position.x - centroid.x;
 					r.y = module.position.y - centroid.y;
 					
+					// TODO: explain what `tau` represents
 					let tau = r.x * F.y - r.y * F.x;
 					
 					if( tau  <  0 ) { module.torque = -1; } else
@@ -109,11 +135,13 @@ class Spaceship {
 		return this.projected_torques;
 	}
 	
+	// TODO: idk what `a`, `b`, `k`, or `d` represent, they are parameters, use better names
+	// TODO: rewrite this whole thing so that it makes more sense
 	constraint_management(owner, spaceship, a, b, k, d, size) {
 		// array containing the coords for all modules
 		let constraints;
-		if( size === 0.5 ) { constraints = h_constraints; }
-		if( size === 1   ) { constraints = w_constraints; }
+		if( size === 0.5 ) { constraints = Module.h_constraints; }
+		if( size === 1   ) { constraints = Module.w_constraints; }
 		
 		let i = (k + 1) % 3;
 		let j = (k + 2) % 3;
@@ -125,22 +153,22 @@ class Spaceship {
 		
 		// TODO: maybe find some pattern here so that I can reduce the size of this shit while keeping the readeability
 		
-		if(d === 0) {
-			if(k === 0 && o === -1) { a.x =  constraints[1].x; a.y =  constraints[1].y; b.x = -constraints[0].x; b.y = -constraints[0].y; }
-			if(k === 0 && o ===  1) { a.x = -constraints[0].x; a.y = -constraints[0].y; b.x =  constraints[1].x; b.y =  constraints[1].y; }
-			if(k === 1 && o === -1) { a.x =  constraints[2].x; a.y =  constraints[2].y; b.x =  constraints[2].x; b.y = -constraints[2].y; }
-			if(k === 1 && o ===  1) { a.x =  constraints[2].x; a.y = -constraints[2].y; b.x =  constraints[2].x; b.y =  constraints[2].y; }
-			if(k === 2 && o === -1) { a.x = -constraints[1].x; a.y =  constraints[1].y; b.x =  constraints[0].x; b.y = -constraints[0].y; }
-			if(k === 2 && o ===  1) { a.x =  constraints[0].x; a.y = -constraints[0].y; b.x = -constraints[1].x; b.y =  constraints[1].y; }
+		if (d === 0) {
+			if (k === 0 && o === -1) { a.x =  constraints[1].x; a.y =  constraints[1].y; b.x = -constraints[0].x; b.y = -constraints[0].y; }
+			if (k === 0 && o ===  1) { a.x = -constraints[0].x; a.y = -constraints[0].y; b.x =  constraints[1].x; b.y =  constraints[1].y; }
+			if (k === 1 && o === -1) { a.x =  constraints[2].x; a.y =  constraints[2].y; b.x =  constraints[2].x; b.y = -constraints[2].y; }
+			if (k === 1 && o ===  1) { a.x =  constraints[2].x; a.y = -constraints[2].y; b.x =  constraints[2].x; b.y =  constraints[2].y; }
+			if (k === 2 && o === -1) { a.x = -constraints[1].x; a.y =  constraints[1].y; b.x =  constraints[0].x; b.y = -constraints[0].y; }
+			if (k === 2 && o ===  1) { a.x =  constraints[0].x; a.y = -constraints[0].y; b.x = -constraints[1].x; b.y =  constraints[1].y; }
 		}
 		
-		if(d === 1) {
-			if(k === 0 && o === -1) { a.x =  constraints[1].x; a.y = -constraints[1].y; b.x = -constraints[0].x; b.y =  constraints[0].y; }
-			if(k === 0 && o ===  1) { a.x = -constraints[0].x; a.y =  constraints[0].y; b.x =  constraints[1].x; b.y = -constraints[1].y; }
-			if(k === 1 && o === -1) { a.x =  constraints[2].x; a.y = -constraints[2].y; b.x =  constraints[2].x; b.y =  constraints[2].y; }
-			if(k === 1 && o ===  1) { a.x =  constraints[2].x; a.y =  constraints[2].y; b.x =  constraints[2].x; b.y = -constraints[2].y; }
-			if(k === 2 && o === -1) { a.x = -constraints[1].x; a.y = -constraints[1].y; b.x =  constraints[0].x; b.y =  constraints[0].y; }
-			if(k === 2 && o ===  1) { a.x =  constraints[0].x; a.y =  constraints[0].y; b.x = -constraints[1].x; b.y = -constraints[1].y; }
+		if (d === 1) {
+			if (k === 0 && o === -1) { a.x =  constraints[1].x; a.y = -constraints[1].y; b.x = -constraints[0].x; b.y =  constraints[0].y; }
+			if (k === 0 && o ===  1) { a.x = -constraints[0].x; a.y =  constraints[0].y; b.x =  constraints[1].x; b.y = -constraints[1].y; }
+			if (k === 1 && o === -1) { a.x =  constraints[2].x; a.y = -constraints[2].y; b.x =  constraints[2].x; b.y =  constraints[2].y; }
+			if (k === 1 && o ===  1) { a.x =  constraints[2].x; a.y =  constraints[2].y; b.x =  constraints[2].x; b.y = -constraints[2].y; }
+			if (k === 2 && o === -1) { a.x = -constraints[1].x; a.y = -constraints[1].y; b.x =  constraints[0].x; b.y =  constraints[0].y; }
+			if (k === 2 && o ===  1) { a.x =  constraints[0].x; a.y =  constraints[0].y; b.x = -constraints[1].x; b.y = -constraints[1].y; }
 			// for a
 			// if(k === 0 && o === -1) { a.x =  constraints[1].x; a.y = -constraints[1].y; }
 			// if(k === 0 && o ===  1) { a.x = -constraints[0].x; a.y =  constraints[0].y; }
@@ -174,22 +202,22 @@ class Spaceship {
 		
 		this.constraints.get(a.body + "|" + b.body).meta = { owner, spaceship };
 		
-		if(d === 0) {
-			if(k === 0 && o === -1) { a.x =  constraints[0].x; a.y =  constraints[0].y; b.x = -constraints[1].x; b.y = -constraints[1].y; }
-			if(k === 0 && o ===  1) { a.x = -constraints[1].x; a.y = -constraints[1].y; b.x =  constraints[0].x; b.y =  constraints[0].y; }
-			if(k === 1 && o === -1) { a.x = -constraints[2].x; a.y =  constraints[2].y; b.x = -constraints[2].x; b.y = -constraints[2].y; }
-			if(k === 1 && o ===  1) { a.x = -constraints[2].x; a.y = -constraints[2].y; b.x = -constraints[2].x; b.y =  constraints[2].y; }
-			if(k === 2 && o === -1) { a.x = -constraints[0].x; a.y =  constraints[0].y; b.x =  constraints[1].x; b.y = -constraints[1].y; }
-			if(k === 2 && o ===  1) { a.x =  constraints[1].x; a.y = -constraints[1].y; b.x = -constraints[0].x; b.y =  constraints[0].y; }
+		if (d === 0) {
+			if (k === 0 && o === -1) { a.x =  constraints[0].x; a.y =  constraints[0].y; b.x = -constraints[1].x; b.y = -constraints[1].y; }
+			if (k === 0 && o ===  1) { a.x = -constraints[1].x; a.y = -constraints[1].y; b.x =  constraints[0].x; b.y =  constraints[0].y; }
+			if (k === 1 && o === -1) { a.x = -constraints[2].x; a.y =  constraints[2].y; b.x = -constraints[2].x; b.y = -constraints[2].y; }
+			if (k === 1 && o ===  1) { a.x = -constraints[2].x; a.y = -constraints[2].y; b.x = -constraints[2].x; b.y =  constraints[2].y; }
+			if (k === 2 && o === -1) { a.x = -constraints[0].x; a.y =  constraints[0].y; b.x =  constraints[1].x; b.y = -constraints[1].y; }
+			if (k === 2 && o ===  1) { a.x =  constraints[1].x; a.y = -constraints[1].y; b.x = -constraints[0].x; b.y =  constraints[0].y; }
 		}
 		
-		if(d === 1) {
-			if(k === 0 && o === -1) { a.x =  constraints[0].x; a.y = -constraints[0].y; b.x = -constraints[1].x; b.y =  constraints[1].y; }
-			if(k === 0 && o ===  1) { a.x = -constraints[1].x; a.y =  constraints[1].y; b.x =  constraints[0].x; b.y = -constraints[0].y; }
-			if(k === 1 && o === -1) { a.x = -constraints[2].x; a.y = -constraints[2].y; b.x = -constraints[2].x; b.y =  constraints[2].y; }
-			if(k === 1 && o ===  1) { a.x = -constraints[2].x; a.y =  constraints[2].y; b.x = -constraints[2].x; b.y = -constraints[2].y; }
-			if(k === 2 && o === -1) { a.x = -constraints[0].x; a.y = -constraints[0].y; b.x =  constraints[1].x; b.y =  constraints[1].y; }
-			if(k === 2 && o ===  1) { a.x =  constraints[1].x; a.y =  constraints[1].y; b.x = -constraints[0].x; b.y = -constraints[0].y; }
+		if (d === 1) {
+			if (k === 0 && o === -1) { a.x =  constraints[0].x; a.y = -constraints[0].y; b.x = -constraints[1].x; b.y =  constraints[1].y; }
+			if (k === 0 && o ===  1) { a.x = -constraints[1].x; a.y =  constraints[1].y; b.x =  constraints[0].x; b.y = -constraints[0].y; }
+			if (k === 1 && o === -1) { a.x = -constraints[2].x; a.y = -constraints[2].y; b.x = -constraints[2].x; b.y =  constraints[2].y; }
+			if (k === 1 && o ===  1) { a.x = -constraints[2].x; a.y =  constraints[2].y; b.x = -constraints[2].x; b.y = -constraints[2].y; }
+			if (k === 2 && o === -1) { a.x = -constraints[0].x; a.y = -constraints[0].y; b.x =  constraints[1].x; b.y =  constraints[1].y; }
+			if (k === 2 && o ===  1) { a.x =  constraints[1].x; a.y =  constraints[1].y; b.x = -constraints[0].x; b.y = -constraints[0].y; }
 			// for a
 			// if(k === 0 && o === -1) { a.x =  constraints[0].x; a.y = -constraints[0].y; }
 			// if(k === 0 && o ===  1) { a.x = -constraints[1].x; a.y =  constraints[1].y; }
@@ -226,8 +254,10 @@ class Spaceship {
 		return { a: a.body, b: b.body };
 	}
 	
+	// TODO: get a better name like `new_module_from_category`
 	add_by_type(world, owner, spaceship, id, category, {x, y, d}, {level, interval, size, main}, angle) {
-		switch(category) {
+		// FIXME: maybe use a hash for legibility?
+		switch (category) {
 			
 			case "Q1": // capsules
 				new Q1(world, owner, spaceship, id, { x, y, d }, {level, interval, size, main}, angle);
@@ -238,9 +268,9 @@ class Spaceship {
 				break;
 				
 			case "R3": // thrusters
-				// electric, no fuel <- innexpensive and it just works
 				new R3(world, owner, spaceship, id, { x, y, d }, {level, interval, size}, angle);
 				break;
+			
 		}
 	}
 	
@@ -251,10 +281,15 @@ class Spaceship {
 		
 		for(let i = 0; i < modules.length; i++) {
 			// fourth item in every module indicates it's category, remove it and set `category` to it
+			// BUG: `.pop()` doesn't take any arguments
+			// TODO: rewrite this body
 			let props = modules[i].pop(3);
 			let category = props[0];
 			
-			if (!props[1]) { props[1] = {}; };
+			if (!props[1]) {
+				props[1] = { };
+			}
+			
 			({
 				level = "I",
 				interval = "Alpha",
@@ -303,17 +338,21 @@ class Spaceship {
 			let j = (i + 1) % 3;
 			let k = (i + 2) % 3;
 			
+			
+			// TODO: explain this mess
 			// start sorting arrays and add to `list`, arrays to be sorted are copies of `mods` + `spaceship.cap_coords` which is `[0,0,0]`
 			list[i] = [...modules].sort((a, b) => {
-				if(a[i] === b[i]) {
-					if(a[j] === b[j]) {
-						if(Math.abs(a[k] - b[k]) === 1) {
+				if (a[i] === b[i]) {
+					if (a[j] === b[j]) {
+						if (Math.abs(a[k] - b[k]) === 1) {
 							// if two consecutive modular number coordinates are followed by a last coordinate in both arrays which has a difference of one
 							// then the two modules are adjacent and should have a constraint
 							this.add_constraint(world, owner, spaceship, a, b, k, dir, size);
 							// add a neighbor
 							this.modules.get(a.toString()).neighbors.push(b.toString());
 							this.modules.get(b.toString()).neighbors.push(a.toString());
+							
+							// FIXME: idk what's up with below comment
 							// console.log([a.toString(), ...this.modules.get(a.toString()).meta.neighbors]);
 							// console.log([b.toString(), ...this.modules.get(b.toString()).meta.neighbors]);
 							// TODO: create a polygon from these
@@ -340,6 +379,7 @@ class Spaceship {
 		]);
 	}
 	
+	// FIXME: idk what below function should do
 	recalculate_d_given_neighbors(current_d, neighbors) {
 		if( current_d === 0 ) {
 			
@@ -350,29 +390,34 @@ class Spaceship {
 	// while output d is the orientation of module given it's coords and origin_d
 	static tri_to_sqr_coords(origin_d, [ x, y, z ]) {
 		// NOTE: simplify if-elses by checking position parameter before entering the equation
-				// console.log({x, y, z});
+		// console.log({x, y, z});
 		
-		if(origin_d === 0) { origin_d = -1; } else
-		if(origin_d === 1) { origin_d =  1; } else
-		{ return console.log(`${origin_d} is not a correct position parameter`); }
+		if (![0, 1].includes(origin_d)) {
+			return console.error(`${origin_d} is not a correct position parameter`);
+		}
 		
-		if(x % 1 === 0 && y % 1 === 0 && z % 1 === 0) { // if x, y, x are all whole numbers
+		if (origin_d === 0) {
+			origin_d = -1;
+		} else if (origin_d === 1) {
+			origin_d =  1;
+		}
+		
+		// if x, y, x are all whole numbers
+		if(x % 1 === 0 && y % 1 === 0 && z % 1 === 0) {
 			x = z - x;
 			y = -origin_d * y;
 			
-			if(origin_d ===  1) { origin_d = 1; } else
-			if(origin_d === -1) { origin_d = 2; }
+			if (origin_d ===  1) { origin_d = 1; } else
+			if (origin_d === -1) { origin_d = 2; }
 		
 			let x_axis_d = (x % 2 + origin_d) % 2;
-					// console.log(x_axis_d);
 			let y_axis_d = (y % 2 + origin_d) % 2;
-					// console.log(y_axis_d);
 			let d = ((x_axis_d + y_axis_d) % 2 + origin_d) % 2;
-					// console.log(d);
 			
 			return { x, y, d };
 		}
 		
+		// FIXME: look at below code
 		// This is idiotic, find another way
 		// if(x % 1 === 0.5 || y % 1 === 0.5 || z % 1 === 0.5) {
 		// 	x = z - x;
@@ -422,8 +467,8 @@ class Spaceship {
 		let angle;
 		let y_offset = (1 * Math.sqrt(12) / 12) / 2;
 		
-		if(sqr_coords.d === 0) { angle = 3 * Math.PI / 2; y_offset *= -1; } else
-		if(sqr_coords.d === 1) { angle =     Math.PI / 2; y_offset *=  1; }
+		if (sqr_coords.d === 0) { angle = 3 * Math.PI / 2; y_offset *= -1; } else
+		if (sqr_coords.d === 1) { angle =     Math.PI / 2; y_offset *=  1; }
 		
 		let x = origin.x + ( ( 1 / 2 )        * sqr_coords.x );
 		let y = origin.y - ( Math.sqrt(3) / 2 * sqr_coords.y ) + y_offset;
@@ -452,8 +497,12 @@ class Spaceship {
 		
 		// add modules once spaceship is virtualy in existance
 		let grid = {};
-		for(let i = 0; i < modules.length; i++) {
-			if( modules[i][3][1] && modules[i][3][1].main ) { grid = modules[i][3][1].grid }
+		
+		for (let i = 0; i < modules.length; i += 1) {
+			// FIXME: idk where these magical idexes are coming from
+			if (modules[i][3][1] && modules[i][3][1].main) {
+				grid = modules[i][3][1].grid;
+			}
 		}
 		
 		universe.users.get(owner).spaceships.get(spaceship).add_modules(
@@ -493,8 +542,15 @@ class Spaceship {
 		// world, owner, spaceship, id, category, {x, y, d}, {level, interval, size, main}, angle
 			world, "", "", "",
 			module.category,
-			{x: module.position.x, y: module.position.y},
-			{level: module.level, interval: module.interval, size: module.size},
+			{
+				x: module.position.x,
+				y: module.position.y
+			},
+			{
+				level: module.level,
+				interval: module.interval,
+				size: module.size
+			},
 			module.angle
 		);
 		
@@ -509,12 +565,12 @@ class Spaceship {
 	static erase_module(world, owner, spaceship, id) {
 		
 		let module = universe.users.get(owner).spaceships.get(spaceship).modules.get(id);
-		let MatterModule = universe.users.get(owner).spaceships.get(spaceship).modules.get(id).Matter;
+		let matter_module = universe.users.get(owner).spaceships.get(spaceship).modules.get(id).Matter;
 		
 		// remove body
 		Matter.Composite.remove(
 			universe.users.get(owner).spaceships.get(spaceship).composite,
-			MatterModule,
+			matter_module,
 			true
 		);
 		
@@ -531,7 +587,7 @@ class Spaceship {
 		// find modules attached to body
 		let constraints = []
 		
-		for(let [id, contraint] of universe.users.get(owner).spaceships.get(spaceship).constraints) {
+		for (let [id, contraint] of universe.users.get(owner).spaceships.get(spaceship).constraints) {
 			if (id.includes(module_id)) { Spaceship.remove_constraint(owner, spaceship, id); /*constraints.push(id);*/ }
 		}
 	}

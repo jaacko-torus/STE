@@ -2,59 +2,97 @@ import Matter from "matter-js";
 
 import universe from "../../../universe.js";
 
+import { map_set } from "../../../../util/util.js";
+
 class Module {
+	owner = "";
+	spaceship = "";
+	
+	category;
+	class = "regular";
+	code = "";
+	// FIXME: should I have some defaults for level and interval as well?
+	level;
+	interval;
+	
+	neighbors = [];
+	
+	position = { x: 0, y: 0, d: 0 };
+	
+	color = ["#333333", 0.5];
+	
+	velocity = { x: 0, y: 0 };
+	
+	angle;
+	size;
+	
+	__id__;
+	
+	Matter = { };
+	
 	constructor(world, owner, spaceship, id, {x, y, d}, {level, interval, size}, angle = Math.PI / 2) {
-		this.owner = owner || "";
-		this.spaceship = spaceship || "";
+		this.owner = owner ?? "";
+		this.spaceship = spaceship ?? "";
 		
 		this.level    = level;
 		this.interval = interval;
-		
-		// current neighbors
-		this.neighbors = [];
 		
 		// this.position = { x, y };
 		// if ( d === 0 || d === 1 ) { this.position.d = d; }
 		// this.position.d = d;
 		this.position = { x, y, d };
 		
-		this.color = ["#333333", 0.5];
+		this.angle = angle;
+		this.size = size;
 		
-		this.velocity = { x: 0, y: 0 };
-		this.angle    = angle;
-		this.size     = size;
-		
-		this.__id__ = id || x + "," + y;
-		
-		
-		this.Matter = {};
+		this.__id__ = id ?? x + "," + y;
 		
 		// add to user's spaceship unless these are not specified
 		if (owner && spaceship) {
-			Module.add_to_list(
-				universe.users.get(owner).spaceships.get(spaceship).modules,
-				this.__id__,
-				this
-			);
+			map_set({
+				map: universe.users.get(owner).spaceships.get(spaceship).modules,
+				key: this.__id__,
+				val: this
+			});
+			
+			// FIXME: not sure what this does?
 			this.Matter = Module.create(world, owner, spaceship, this, size);
+			
 			this.Matter.meta = {
-				owner     : this.owner,
-				spaceship : this.spaceship,
-				__id__    : this.__id__
+				owner: this.owner,
+				spaceship: this.spaceship,
+				__id__: this.__id__
 			};
 		} else {
 			if(!universe.modules.has(this.__id__)) {
 				this.color = ["#000000", 1]; // <- for now so that I can look at the text
-				Module.add_to_list(universe.modules, this.__id__, this);
+				
+				map_set({
+					map: universe.modules,
+					key: this.__id__,
+					val: this
+				});
+				
 				this.Matter = Module.create(world, owner, spaceship, this, size);
-			} else { console.error("this module ID is already populated, please shift the coordinates of this module and try again"); }
+			} else {
+				console.error("this module ID is already populated, please shift the coordinates of this module and try again");
+			}
 		}
 	}
 	
 	update() {
 		// DEBUG: too much recursion, go to capsule update()
-		this.position = { x: this.Matter.position.x, y: this.Matter.position.y, d: this.position.d };
-		this.velocity = { x: this.Matter.velocity.x, y: this.Matter.velocity.y };
+		this.position = {
+			x: this.Matter.position.x,
+			y: this.Matter.position.y,
+			d: this.position.d
+		};
+		
+		this.velocity = {
+			x: this.Matter.velocity.x,
+			y: this.Matter.velocity.y
+		};
+		
 		this.angle = this.Matter.angle;
 	}
 	
@@ -92,17 +130,6 @@ class Module {
 			{ x: -(     s / 4 ), y: -l / 2 }
 		];
 	}
-	
-	static add_to_list(list, id, value, overwrite = true) {
-		// TODO: throw error if couldn't overwrite
-		if (!overwrite && list.has(id)) {
-			console.log("can't overwrite ", list.get(id), " with ", value);
-			return false;
-		} else {
-			list.set( id, value );
-			return true;
-		}
-	}
 
 	static create(world, owner, spaceship, module, size) {
 		// let module_body;
@@ -114,10 +141,20 @@ class Module {
 		let length, mass
 		if( size === 0.5 ) { length = Module.h_length; mass = 0.25; }
 		if( size === 1   ) { length = Module.w_length; mass = 1   ; }
-		// let module_body = Bodies.polygon(module.Matter.position.x, module.Matter.position.y, 3, length, { angle: module.Matter.angle, mass });
-		let module_body = Matter.Bodies.polygon(module.position.x, module.position.y, 3, length, { angle: module.angle, mass });
+		
+		let module_body = Matter.Bodies.polygon(
+			module.position.x,
+			module.position.y,
+			3,
+			length,
+			{
+				angle: module.angle,
+				mass
+			}
+		);
 		
 		// add to user's spaceship unless these are not specified
+		// FIXME: should this be `&&` instead?
 		if (owner || spaceship) {
 			Matter.World.add(universe.users.get(owner).spaceships.get(spaceship).composite, module_body);
 		} else {
@@ -127,13 +164,16 @@ class Module {
 		return module_body;
 	}
 	
+	// TODO: use a static class to replace an enum
+		// https://masteringjs.io/tutorials/fundamentals/enum
 	static get intervals() {
 		// green, yellow, orange, red, pink, violet, blue, light blue, white, multicolor, black with white contrast, dark green
 		return [ "Alpha", "Beta", "Charlie", "Delta", "Echo", "Foxtrot", "Golf", "Hotel", "India", "Juliet", "Kilo", "Lima" ];
 	}
 	
 	static get categories() {
-		return { // TODO: Add descriptions and all of this, load async from JSON file or something
+		return {
+			// TODO: Add descriptions and all of this, load async from JSON file or something
 			// index 0 is the name of the sub-category
 			"q": [ "capsule"     , "normal", "p_ai", [ "u_ai", "infobot", "pm_bot", "bms_bot", "sig_bot" ] ],
 			"w": [ "weapon"      , "physical", "short_distance", "long_distance" ],
@@ -149,14 +189,16 @@ class Module {
 	
 	static get classes() { return ["regular", "special", "advanced"]; }
 	
-	static get special_subclass() { // TODO: revise these special subclasses
+	static get special_subclass() {
+		// TODO: revise these special subclasses
 		return {
 			"time"  : ["x2", "x5", "x10", "x50", "x100"],
 			"level" : ["/2", "/5", "/10", "/20",  "/40"]
 		};
 	}
 	
-	static get codes() { // TODO: come up with new
+	static get codes() {
+		// TODO: come up with new
 		return {
 			"0": "none",
 			"1": "overclock"
@@ -164,28 +206,4 @@ class Module {
 	}
 }
 
-
-
-
-let add_to_list = Module.add_to_list;
-let h_constraints = Module.h_constraints;
-let w_constraints = Module.w_constraints;
-
-let w_size   = Module.w_size;
-let w_height = Module.w_height;
-let w_length = Module.w_length;
-let h_size   = Module.h_size;
-let h_height = Module.h_height;
-let h_length = Module.h_length;
-
-
 export default Module;
-export {
-	add_to_list,
-	
-	h_constraints,
-	w_constraints,
-	
-	w_size, w_height, w_length,
-	h_size, h_height, h_length,
-};

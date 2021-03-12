@@ -1,14 +1,19 @@
 import universe from "../universe.js";
 
-import { add_to_list } from "./spaceship/modules/Module.js";
+import { map_set } from "../../util/util.js";
 
 class User {
+	name;
+	spaceships = new Map();
+	
 	constructor(id, name) {
 		this.name = name;
 		
-		this.spaceships = new Map();
-		
-		add_to_list(universe.users, id, this);
+		map_set({
+			map: universe.users,
+			key: id,
+			val: this
+		});
 	}
 }
 

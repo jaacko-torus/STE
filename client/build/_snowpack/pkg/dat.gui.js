@@ -11,12 +11,6 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-(function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
-	typeof define === 'function' && define.amd ? define(['exports'], factory) :
-	(factory((global.dat = {})));
-}(this, (function (exports) { 'use strict';
-
 function ___$insertStyle(css) {
   if (!css) {
     return;
@@ -186,7 +180,7 @@ var Common = {
     return obj === false || obj === true;
   },
   isFunction: function isFunction(obj) {
-    return Object.prototype.toString.call(obj) === '[object Function]';
+    return obj instanceof Function;
   }
 };
 
@@ -684,8 +678,9 @@ Object.defineProperty(Color.prototype, 'a', {
 });
 Object.defineProperty(Color.prototype, 'hex', {
   get: function get$$1() {
-    if (!this.__state.space !== 'HEX') {
+    if (this.__state.space !== 'HEX') {
       this.__state.hex = ColorMath.rgb_to_hex(this.r, this.g, this.b);
+      this.__state.space = 'HEX';
     }
     return this.__state.hex;
   },
@@ -2524,14 +2519,4 @@ var index = {
   GUI: GUI$1
 };
 
-exports.color = color;
-exports.controllers = controllers;
-exports.dom = dom$1;
-exports.gui = gui;
-exports.GUI = GUI$1;
-exports['default'] = index;
-
-Object.defineProperty(exports, '__esModule', { value: true });
-
-})));
-//# sourceMappingURL=dat.gui.js.map
+export default index;

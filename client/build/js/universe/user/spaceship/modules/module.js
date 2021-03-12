@@ -1,16 +1,6 @@
-// const Engine      = Matter.Engine;
-// const Render      = Matter.Render;
-// const Runner      = Matter.Runner;
-// const Body        = Matter.Body;
-// const Events      = Matter.Events;
-// const World       = Matter.World;
-// const Bodies      = Matter.Bodies;
-// const Constraint  = Matter.Constraint;
-// const Constraints = Matter.Constraints;
-// const Composite   = Matter.Composite;
-// const Composites  = Matter.Composites;
+import Matter from "../../../../../_snowpack/pkg/matter-js.js";
 
-import { universe } from "../../../universe.js";
+import universe from "../../../universe.js";
 
 class Module {
 	constructor(world, owner, spaceship, id, {x, y, d}, {level, interval, size}, angle = Math.PI / 2) {
@@ -125,12 +115,14 @@ class Module {
 		if( size === 0.5 ) { length = Module.h_length; mass = 0.25; }
 		if( size === 1   ) { length = Module.w_length; mass = 1   ; }
 		// let module_body = Bodies.polygon(module.Matter.position.x, module.Matter.position.y, 3, length, { angle: module.Matter.angle, mass });
-		let module_body = Bodies.polygon(module.position.x, module.position.y, 3, length, { angle: module.angle, mass });
+		let module_body = Matter.Bodies.polygon(module.position.x, module.position.y, 3, length, { angle: module.angle, mass });
 		
 		// add to user's spaceship unless these are not specified
 		if (owner || spaceship) {
-			World.add(universe.users.get(owner).spaceships.get(spaceship).composite, module_body);
-		} else { World.add(world, module_body); }
+			Matter.World.add(universe.users.get(owner).spaceships.get(spaceship).composite, module_body);
+		} else {
+			Matter.World.add(world, module_body);
+		}
 		
 		return module_body;
 	}
@@ -186,9 +178,9 @@ let h_size   = Module.h_size;
 let h_height = Module.h_height;
 let h_length = Module.h_length;
 
+
+export default Module;
 export {
-	Module,
-	
 	add_to_list,
 	
 	h_constraints,

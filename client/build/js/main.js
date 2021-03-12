@@ -1,68 +1,59 @@
-// Matter modules
-const Engine          = Matter.Engine;
-// const Render          = Matter.Render;
-const Runner          = Matter.Runner;
-const Events          = Matter.Events;
-// const Common          = Matter.Common;
-const MouseConstraint = Matter.MouseConstraint;
-const Mouse           = Matter.Mouse;
-const World           = Matter.World;
-// const Body            = Matter.Body;
-// const Bodies          = Matter.Bodies;
-// const Constraint      = Matter.Constraint;
-// const Constraints     = Matter.Constraints;
-// const Composite       = Matter.Composite;
-// const Composites      = Matter.Composites;
+import Matter from "../_snowpack/pkg/matter-js.js";
+import p5 from "../_snowpack/pkg/p5.js";
 
+import DEBUG from "./debug.js";
+import { interface_script } from "./interface.js";
+
+import universe from "./universe/universe.js";
+import User from "./universe/user/User.js";
+import Spaceship from "./universe/user/spaceship/Spaceship.js";
+import { w_size, w_height, w_length, h_size, h_height, h_length } from "./universe/user/spaceship/modules/Module.js";
+
+import config from "./util/config.js";
 
 // helper functions
 import { hexAlpha } from "./helper/helper.js";
 
 // presets
-import * as module_preset from "./presets/module_setup_presets.js";
+import * as spaceship_presets from "./presets/spaceship_presets.js";
 
-import { universe } from "./universe/universe.js";
-// DEBUG: this is only for debugging purposes, delete this line later
-window.universe = universe;
-
-import { DEBUG } from "./debug.js";
-window.DEBUG = DEBUG;
-
-import { w_size, w_height, w_length, h_size, h_height, h_length } from "./universe/user/spaceship/modules/module.js";
-import { T1 } from "./universe/user/spaceship/modules/structs/struct.js";
-import { Q1 } from "./universe/user/spaceship/modules/capsules/capsule.js";
-import { R3 } from "./universe/user/spaceship/modules/thrusters/thrusters.js";
-import { Spaceship } from "./universe/user/spaceship/spaceship.js";
-import { User } from "./universe/user/user.js";
-
+let globals = {
+	universe,
+	DEBUG,
+	
+	canvas: null,
+	engine: null,
+	runner: null,
+	
+	mouse: null,
+	mouse_constraint: null,
+	
+	ss: null
+};
 
 let font = {};
-let canvas;
-let engine;
-let world;
-let runner;
-let ss;
 
 
 function preload() {
-	font["new_courier"] = loadFont("../fonts/new_courier.ttf");
+	config.font.set("new_courier", loadFont("../fonts/new_courier.ttf"));
+	config.font.set("FiraCode", loadFont("../fonts/FiraCode.ttf"));
+	// font["new_courier"] = loadFont("../fonts/new_courier.ttf");
 }
 
 function setup() {
-	canvas = createCanvas(windowWidth, windowHeight);
+	globals.canvas = createCanvas(windowWidth, windowHeight);
 	
 	// create engine
-	engine = Engine.create();
-	world  = engine.world;
-	window.world = world;
+	globals.engine = Matter.Engine.create();
+	globals.world = globals.engine.world;
 	
 	// set gravity to 0
-	engine.world.gravity.x = 0;
-	engine.world.gravity.y = 0;
+	globals.engine.world.gravity.x = 0;
+	globals.engine.world.gravity.y = 0;
 	
 	// create runner for engine
-	runner = Runner.create();
-	Runner.run(runner, engine);
+	globals.runner = Matter.Runner.create();
+	Matter.Runner.run(globals.runner, globals.engine);
 	
 	
 	
@@ -71,34 +62,30 @@ function setup() {
 	
 	new User("jaacko0", "jaacko");
 	new Spaceship(
-		world,
+		globals.world,
 		"jaacko0",
 		"ss0",
 		{ x: 5, y: 5 }, // position
 		[ // modules
 			// ordered by y, z, x in file since it's easier
-			// ...module_preset.d0_single
-			// ...module_preset.d1_single
-			// ...module_preset.d1_dt
-			// ...module_preset.d0_5x5
-			// ...module_preset.d1_5x5
-			...module_preset.d0_cool_ship
+			// ...spaceship_presets.d0_single
+			// ...spaceship_presets.d1_single
+			// ...spaceship_presets.d1_dt
+			// ...spaceship_presets.d0_5x5
+			// ...spaceship_presets.d1_5x5
+			...spaceship_presets.d0_cool_ship
 		]
 	);
 	
-	ss = universe.users.get("jaacko0").spaceships.get("ss0");
-	window.ss = ss;
-	console.log(ss);
-	
-	
-	
-	
+	globals.ss = universe.users.get("jaacko0").spaceships.get("ss0");
+	console.log(globals.ss);
 	
 	/* -- mouse controls -- */
-	let mouse = Mouse.create(canvas.elt);
+	
+	let mouse = Matter.Mouse.create(globals.canvas.elt);
 	mouse.pixelRatio = pixelDensity();
 	
-	let mouseConstraint = MouseConstraint.create(engine, {
+	let mouse_constraint = Matter.MouseConstraint.create(globals.engine, {
 		mouse,
 		constraint: {
 			damping: 1,
@@ -106,75 +93,76 @@ function setup() {
 		}
 	});
 	
-	World.add(world, mouseConstraint);
+	Matter.World.add(globals.world, mouse_constraint);
 	
-	Events.on(mouseConstraint, "mousedown", e => {
-		let MatterModule = e.source.body;
-		
+	Matter.Events.on(mouse_constraint, "mousedown", (e) => {
+		// FIXME: not sure why it's called `matter_module`
+		let matter_module = e.source.body;
 		
 		if (
-			MatterModule &&
-			MatterModule.meta &&
-			MatterModule.meta.owner === "jaacko0" &&
-			MatterModule.meta.spaceship === "ss0"
-			) {
+			matter_module &&
+			matter_module.meta &&
+			matter_module.meta.owner === "jaacko0" &&
+			matter_module.meta.spaceship === "ss0"
+		) {
+			// FIXME: both use the same parameters, maybe there's a shortcut somewhere
 			// NOTE: erase is remove from world, while remove is remove from ship
-			
-			// erase selected module
-			if (  DEBUG.var.erase_mode ) { Spaceship.erase_module(world, MatterModule.meta.owner, MatterModule.meta.spaceship, MatterModule.meta.__id__); }
-			// remove selected module
-			if ( !DEBUG.var.erase_mode ) { Spaceship.remove_module(world, MatterModule.meta.owner, MatterModule.meta.spaceship, MatterModule.meta.__id__); }
+			if (DEBUG.var.erase_mode) {
+				// erase selected module
+				Spaceship.erase_module(
+					globals.world,
+					matter_module.meta.owner,
+					matter_module.meta.spaceship,
+					matter_module.meta.__id__
+				);
+			} else {
+				// remove selected module
+				Spaceship.remove_module(
+					globals.world,
+					matter_module.meta.owner,
+					matter_module.meta.spaceship,
+					matter_module.meta.__id__
+				);
+			}
 		}
 	});
 	
-	
-	
-	
-	
 	/* -- input events & loop -- */
 	
-	function add_keyboard_events() {
-		// didn't wanna type this twice cuz it looked ugly, made a function instead
-		let ake = key_dir => {
-			document.addEventListener(key_dir, e => {
-				if ( key_dir === "keydown" ) { key_dir =  true; }
-				if ( key_dir === "keyup"   ) { key_dir = false; }
-				
-				if ( e.key.toLowerCase() === "w" || e.key === "ArrowUp"    ) { ss.keys.up    = key_dir; }
-				if ( e.key.toLowerCase() === "a" || e.key === "ArrowLeft"  ) { ss.keys.left  = key_dir; }
-				if ( e.key.toLowerCase() === "d" || e.key === "ArrowRight" ) { ss.keys.right = key_dir; }
-				if ( e.key.toLowerCase() === "s" || e.key === "ArrowDown"  ) { ss.keys.down  = key_dir; }
-			});
-		}
-	
-		ake("keydown");
-		ake("keyup");
+	// FIXME: this should be it's own function
+	let set_spaceship_input_keys = (e, spaceship, pressing) => {
+		new Map([
+			["left",  { letter: "a", arrow: "ArrowLeft"  }],
+			["right", { letter: "d", arrow: "ArrowRight" }],
+			["up",    { letter: "w", arrow: "ArrowUp"    }],
+			["down",  { letter: "s", arrow: "ArrowDown"  }]
+		]).forEach((key, direction) => {
+			if (e.key.toLowerCase() === key.letter || e.key === key.arrow) {
+				spaceship.keys[direction] = pressing;
+			}
+		});
 	}
 	
-	add_keyboard_events();
+	document.addEventListener("keydown", (e) => {
+		set_spaceship_input_keys(e, globals.ss, true);
+	});
+	
+	document.addEventListener("keyup", (e) => {
+		set_spaceship_input_keys(e, globals.ss, false)
+	});
 	
 	// NOTE: keep counter for debug purposes
 	// let counter = 0;
-	Events.on(engine, "beforeUpdate", event => { // update loop, 60fps, 60 counter = 1sec
+	Matter.Events.on(globals.engine, "beforeUpdate", (e) => { // update loop, 60fps, 60 counter = 1sec
 		// counter += 1;
-		ss.update();
-		for (let [module_id, module] of universe.modules) { module.update(); }
+		globals.ss.update();
+		for (let module of universe.modules.values()) {
+			module.update();
+		}
 	});
 	
 	frameRate(60);
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 function draw() {
 	background("#111111");
@@ -198,22 +186,17 @@ function draw() {
 	}
 }
 
-
-
-
-
 function reset_drawing_defaults() {
 	// default
 	noStroke();
 	fill(hexAlpha("#ffffff", 1));
-	textFont(font.new_courier);
+	// textFont(font.new_courier);
+	textFont(config.font.get("FiraCode"));
 	// textSize()
 	textAlign(CENTER, CENTER);
 }
 
-
-
-
+// FIXME: this should be in debug.js?
 function draw_modules(map) {
 	for ( let [module_id, module] of map) {
 		// use module color
@@ -231,17 +214,16 @@ function draw_modules(map) {
 		reset_drawing_defaults();
 		DEBUG.show_angle_indicators(module, w_height, w_length);
 		
-		
 		reset_drawing_defaults();
 		DEBUG.module_text(font, module);
 	}
 }
 
+function windowResized() {
+	resizeCanvas(windowWidth, windowHeight);
+}
 
-
-
-function windowResized() { resizeCanvas(windowWidth, windowHeight); }
-
+window.globals = globals;
 // Making sure P5 can use these functions
 window.preload = preload;
 window.setup = setup;
@@ -251,7 +233,5 @@ window.windowResized = windowResized;
 // --------------------------------------------------------------------------------------------------------------------
 /* -- render -- */
 
-import { interface_script } from "./interface.js";
-
 // DEBUG: last two argumeht are there for debugging
-interface_script(world, Runner, runner);
+interface_script(globals.world, Matter.Runner, globals.runner);

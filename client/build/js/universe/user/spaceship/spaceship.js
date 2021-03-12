@@ -1,20 +1,12 @@
-// const Engine      = Matter.Engine;
-// const Render      = Matter.Render;
-// const Runner      = Matter.Runner;
-// const Body        = Matter.Body;
-// const Events      = Matter.Events;
-const World       = Matter.World;
-// const Bodies      = Matter.Bodies;
-const Constraint  = Matter.Constraint;
-// const Constraints = Matter.Constraints;
-const Composite   = Matter.Composite;
-// const Composites  = Matter.Composites;
+import Matter from "../../../../_snowpack/pkg/matter-js.js";
 
-import { universe } from "../../universe.js";
-import { add_to_list, h_constraints, w_constraints, w_size, w_height, w_length, h_size, h_height, h_length } from "./modules/module.js";
-import { T1 } from "./modules/structs/struct.js";
-import { Q1 } from "./modules/capsules/capsule.js";
-import { R3 } from "./modules/thrusters/thrusters.js";
+import universe from "../../universe.js";
+
+import { add_to_list, h_constraints, w_constraints, w_size, w_height, w_length, h_size, h_height, h_length } from "./modules/Module.js";
+
+import { T1 } from "./modules/structs/Struct.js";
+import { Q1 } from "./modules/capsules/Capsule.js";
+import { R3 } from "./modules/thrusters/Thrusters.js";
 
 class Spaceship {
 	constructor(world, owner, id, position, modules = [], angle = 3 * Math.PI / 2) {
@@ -38,7 +30,7 @@ class Spaceship {
 		this.modules = new Map();
 		this.constraints = new Map();
 		
-		this.composite = Composite.create();
+		this.composite = Matter.Composite.create();
 		
 		add_to_list(universe.users.get(owner).spaceships, id, this);
 		
@@ -47,7 +39,7 @@ class Spaceship {
 		
 		// NOTE: I don't like the look of the line below
 		// Each module is already added to the world, am I messing up MatterJS through that?
-		World.add(world, this.composite);
+		Matter.World.add(world, this.composite);
 	}
 	
 	// it's going to loop through every capsule and get instructions
@@ -63,6 +55,7 @@ class Spaceship {
 		// TODO: this method is easy but not very efficient
 		let x_pos_total = 0;
 		let y_pos_total = 0;
+		
 		for( let [id, module] of this.modules ) {
 			x_pos_total += module.position.x;
 			y_pos_total += module.position.y;
@@ -171,7 +164,7 @@ class Spaceship {
 			// if(k === 2 && o ===  1) { b.x = 0; b.y = 0; }
 		}
 		
-		this.constraints.set(a.body + "|" + b.body, Constraint.create({
+		this.constraints.set(a.body + "|" + b.body, Matter.Constraint.create({
 			bodyA: this.modules.get(a.body).Matter, pointA: { x: a.x, y: a.y },
 			bodyB: this.modules.get(b.body).Matter, pointB: { x: b.x, y: b.y },
 			
@@ -220,7 +213,7 @@ class Spaceship {
 			// if(k === 2 && o ===  1) { b.x = 0; b.y = 0; }
 		}
 		
-		this.constraints.set(b.body + "|" + a.body, Constraint.create({
+		this.constraints.set(b.body + "|" + a.body, Matter.Constraint.create({
 			bodyA: this.modules.get(a.body).Matter, pointA: { x: a.x, y: a.y },
 			bodyB: this.modules.get(b.body).Matter, pointB: { x: b.x, y: b.y },
 			
@@ -341,7 +334,7 @@ class Spaceship {
 	add_constraint(world, owner, spaceship, a, b, k, dir, size) {
 		let body_pair = this.constraint_management(owner, spaceship, a, b, k, dir, size);
 		
-		Composite.add(this.composite, [ // add to spaceship.composite instead
+		Matter.Composite.add(this.composite, [ // add to spaceship.composite instead
 			this.constraints.get(body_pair.a + "|" + body_pair.b),
 			this.constraints.get(body_pair.b + "|" + body_pair.a)
 		]);
@@ -477,7 +470,7 @@ class Spaceship {
 	
 	static reset(world, owner, spaceship) {
 		// clear bodies
-		Composite.clear(universe.users.get(owner).spaceships.get(spaceship).composite, false, true);
+		Matter.Composite.clear(universe.users.get(owner).spaceships.get(spaceship).composite, false, true);
 		
 		// clear virtual bodies
 		universe.users.get(owner).spaceships.get(spaceship).modules.clear();
@@ -490,7 +483,7 @@ class Spaceship {
 		let MatterModule = universe.users.get(owner).spaceships.get(spaceship).modules.get(id).Matter;
 		
 		// remove body
-		Composite.remove(
+		Matter.Composite.remove(
 			universe.users.get(owner).spaceships.get(spaceship).composite,
 			MatterModule,
 			true
@@ -519,7 +512,7 @@ class Spaceship {
 		let MatterModule = universe.users.get(owner).spaceships.get(spaceship).modules.get(id).Matter;
 		
 		// remove body
-		Composite.remove(
+		Matter.Composite.remove(
 			universe.users.get(owner).spaceships.get(spaceship).composite,
 			MatterModule,
 			true
@@ -545,7 +538,7 @@ class Spaceship {
 	
 	static remove_constraint(owner, spaceship, id) {
 		// remove from MatterJS
-		Composite.remove(
+		Matter.Composite.remove(
 			universe.users.get(owner).spaceships.get(spaceship).composite,
 			universe.users.get(owner).spaceships.get(spaceship).constraints.get(id),
 			true
@@ -560,8 +553,8 @@ class Spaceship {
 let load =  Spaceship.load;
 let reset = Spaceship.reset;
 
+export default Spaceship;
 export {
-	Spaceship,
 	load,
 	reset
 };

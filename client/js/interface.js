@@ -1,9 +1,12 @@
 import $ from "jquery";
 
-import DEBUG from "./debug";
+import DEBUG from "./debug.js";
 
-import { datGUI_builder } from "./helper/dat.gui";
-import { load, reset } from "./universe/user/spaceship/Spaceship";
+// import { datGUI_builder } from "./helper/dat.gui";
+import { datGUI_builder } from "./util/dat.gui.util.js";
+
+import universe from "./universe/universe.js";
+import { load, reset } from "./universe/user/spaceship/Spaceship.js";
 
 function interface_script(world, Runner, runner) {
 	$(() => {

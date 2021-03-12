@@ -6,18 +6,16 @@ import universe from "../../../../universe.js";
 
 // NOTE: thrusters need at least one clear side, and it has to be the one opposite to their direction
 class Thruster extends Module {
+	max_neighbors = 1;
+	
 	constructor(world, owner, spaceship, id, position, meta, angle) {
 		super(world, owner, spaceship, id, position, meta, angle);
-		
-		this.max_neighbors = 1;
-		
-		this.class = "regular";
-		this.code  = "0";
 	}
 	
 	get speed() {
 		let angle = this.angle;
-		let rate  = 1/8000;
+		let rate = 1 / 8000;
+		
 		return {
 			get rate() { return rate; },
 			get x() { return -Math.cos(angle) * rate; },
@@ -25,7 +23,9 @@ class Thruster extends Module {
 		};
 	}
 	
-	get angularSpeed() { return Math.PI / 900; }
+	get angular_speed() {
+		return Math.PI / 900;
+	}
 	
 	event_handler(module, capsule) {
 		let speed_x, speed_y;
@@ -58,31 +58,36 @@ class Thruster extends Module {
 			DEBUG.show_active_thrusters &&
 			module.Matter.force.x !== 0 &&
 			module.Matter.force.y !== 0
-		) { this.color = ["#ff0000", 0.5]; } else
-		{ this.color = ["#333333", 0.5]; }
+		) {
+			this.color = ["#ff0000", 0.5];
+		} else {
+			this.color = ["#333333", 0.5];
+		}
 	}
 }
 
 class R3 extends Thruster { // electric
+	category = "R3";
+	
 	constructor(world, owner, spaceship, id, position, meta, angle) {
 		super(world, owner, spaceship, id, position, meta, angle);
-		
-		this.category = "R3";
 	}
 	
 	get speed() {
 		let angle = this.angle;
 		let base_rate = super.speed.rate;
 		let rate = 4 * base_rate;
+		
 		return {
 			get x() { return -Math.cos(angle) * rate; },
 			get y() { return -Math.sin(angle) * rate; }
 		};
 	}
 	
-	get angularSpeed() {
-		let base_rate = super.angularSpeed;
+	get angular_speed() {
+		let base_rate = super.angular_speed;
 		let rate = 6 * base_rate;
+		
 		return rate;
 	}
 	

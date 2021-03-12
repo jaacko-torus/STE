@@ -1,5 +1,8 @@
+import universe from "./universe/universe.js";
+
+import config from "./util/config.js";
+
 import { hexAlpha } from "./helper/helper.js";
-import { universe } from "./universe/universe.js";
 
 const DEBUG = {
 	
@@ -51,7 +54,7 @@ const DEBUG = {
 	} },
 		
 	show_d_variable(font, module) {
-		textFont(font.new_courier);
+		textFont(config.font.get("FiraCode"));
 		textSize(12);
 		textStyle(BOLD);
 		textAlign(CENTER, CENTER);
@@ -64,7 +67,7 @@ const DEBUG = {
 	},
 	
 	show_neighbor_number(font, module) {
-		textFont(font.new_courier);
+		textFont(config.font.get("FiraCode"));
 		textSize(12);
 		textStyle(BOLD);
 		textAlign(CENTER, CENTER);
@@ -72,11 +75,12 @@ const DEBUG = {
 	},
 	
 	show_id(font, module) {
-		textFont(font.new_courier);
+		textFont(config.font.get("FiraCode"));
 		textSize(9);
 		textStyle(BOLD);
 		textAlign(CENTER, CENTER);
 		
+		// FIXME: not sure what I was attempting below
 		// if(!module.owner) { console.log(module); }
 		
 		text(module.__id__, module.position.x, module.position.y);
@@ -134,4 +138,4 @@ const DEBUG = {
 	},
 };
 
-export { DEBUG };
+export default DEBUG;

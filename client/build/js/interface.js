@@ -1,14 +1,13 @@
-import { datGUI_builder } from "./helper/helper.js";
+import $ from "../_snowpack/pkg/jquery.js";
 
-import { load, reset } from "./universe/user/spaceship/spaceship.js";
-import { universe } from "./universe/universe.js";
-import { DEBUG } from "./debug.js";
+import DEBUG from "./debug.js";
 
-// presets
-import * as module_preset from "./presets/module_setup_presets.js";
+// import { datGUI_builder } from "./helper/dat.gui";
+import { datGUI_builder } from "./util/dat.gui.util.js";
+import { load, reset } from "./universe/user/spaceship/Spaceship.js";
 
 function interface_script(world, Runner, runner) {
-	$(document).ready(() => {
+	$(() => {
 		$("#new_ship_code").val(
 `// touch modules to separate
 // wasd and arrows to move
