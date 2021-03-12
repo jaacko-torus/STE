@@ -8,9 +8,15 @@ import universe from "../../../../universe.js";
 class Thruster extends Module {
 	max_neighbors = 1;
 	
-	torque;
-	
-	constructor(world, owner, spaceship, id, position, meta, angle) {
+	constructor(
+		world : Matter.World,
+		owner : string,
+		spaceship : string,
+		id : string,
+		position : { x : number, y : number, d : number },
+		meta : { level : string, interval : string, size : number },
+		angle : number
+	) {
 		super(world, owner, spaceship, id, position, meta, angle);
 	}
 	

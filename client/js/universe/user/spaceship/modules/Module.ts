@@ -3,49 +3,69 @@ import Matter from "matter-js";
 import universe from "../../../universe.js";
 
 import { map_set } from "../../../../util/util.js";
+import Spaceship from "../Spaceship.js";
 
-
+interface IModuleParameters {
+	world : Matter.World,
+	owner : string,
+	spaceship : string,
+	id : string,
+	position : { x : number, y : number, d : number },
+	meta : { level : string, interval : string, size : number },
+	angle : number
+}
 
 class Module {
-	owner = "";
-	spaceship = "";
+	owner : string = "";
+	spaceship : string = "";
 	
-	category;
-	class = "regular";
-	code = "";
+	category : string;
+	class : string = "regular";
+	code : string = "";
 	// FIXME: should I have some defaults for level and interval as well?
-	level;
-	interval;
+	level : string;
+	interval : string;
 	
 	neighbors = [];
 	
-	position = { x: 0, y: 0, d: 0 };
+	position : { x : number, y : number, d: number};
 	
 	color = ["#333333", 0.5];
 	
-	velocity = { x: 0, y: 0 };
+	velocity : { x : number, y : number };
+	torque : number;
 	
-	angle;
-	size;
+	angle : number;
+	// TODO: size should be 1 or 0.5, so maybe use enum?
+	size : number;
 	
-	__id__;
+	__id__ : string;
 	
 	
 	// TODO: make all the properties below
-	Matter : any & Matter.Body = {
+	// HACK: should not be using any right here
+	Matter : any & Matter.Body & {
 		meta: {
-			owner: "",
-			spaceship: undefined,
-			__id__: ""
+			owner: string,
+			spaceship: Spaceship,
+			__id__: string
 		},
-		position: { x: 0, y: 0 },
-		velocity: { x: 0, y: 0 },
-		force: { x: 0, y: 0 },
-		torque: 0,
-		angle: 0
-	};
+		position: { x: number, y: number },
+		velocity: { x: number, y: number },
+		force: { x: number, y: number },
+		torque: number,
+		angle: number
+	} = { };
 	
-	constructor(world, owner, spaceship, id, {x, y, d}, {level, interval, size}, angle = Math.PI / 2) {
+	constructor(
+		world : Matter.World,
+		owner : string,
+		spaceship : string,
+		id : string,
+		{ x, y, d } : { x : number, y : number, d : number },
+		{ level, interval, size } : { level : string, interval : string, size : number },
+		angle : number = Math.PI / 2
+	) {
 		this.owner = owner ?? "";
 		this.spaceship = spaceship ?? "";
 		

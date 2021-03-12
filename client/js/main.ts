@@ -20,13 +20,26 @@ import { hexAlpha } from "./util/p5.util.js";
 import spaceship_presets from "./presets/spaceship_presets.json";
 
 
-let globals = {
+let globals : {
 	universe,
 	DEBUG,
 	
-	world: null,
+	canvas : p5.Renderer,
+	engine : Matter.Engine,
+	world : Matter.World,
+	runner : Matter.Runner,
+	
+	mouse : any,
+	mouse_constraint : any,
+	
+	ss : Spaceship
+} = {
+	universe,
+	DEBUG,
+	
 	canvas: null,
 	engine: null,
+	world: null,
 	runner: null,
 	
 	mouse: null,
@@ -34,10 +47,6 @@ let globals = {
 	
 	ss: null
 };
-
-let font = {};
-
-type P5 = any;
 
 new p5((s : p5) => {
 	s.preload = () => {

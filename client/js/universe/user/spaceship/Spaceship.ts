@@ -5,28 +5,36 @@ import universe from "../../universe.js";
 import Module from "./modules/Module.js";
 
 import { T1 } from "./modules/structs/Struct.js";
-import { Q1 } from "./modules/capsules/Capsule.js";
+import Capsule, { Q1 } from "./modules/capsules/Capsule.js";
 import { R3 } from "./modules/thrusters/Thrusters.js";
 
 import { map_set } from "../../../util/util.js";
 
 class Spaceship {
-	owner;
-	main = undefined;
+	owner : string;
+	main : string = undefined;
 	
-	position = { x: 0, y: 0 }
+	position : { x: number, y: number };
 	
-	input_keys = {};
+	input_keys : object = { };
 	
-	capsules = new Map();
-	modules = new Map();
+	capsules : Map<string, Capsule> = new Map();
+	modules : Map<string, Module> = new Map();
 	constraints = new Map();
 	
 	composite;
 	
 	projected_torques;
 	
-	constructor(world, owner, id, position, modules = [], angle = 3 * Math.PI / 2) {
+	constructor(
+		world : Matter.World,
+		owner : string,
+		id : string,
+		position : { x : number, y : number },
+		// TODO: make a proper type for modules
+		modules : any[] = [],
+		angle : number = 3 * Math.PI / 2
+	) {
 		// if(position.d === 0) { angle = 3 * Math.PI / 2; } else
 		// if(position.d === 1) { angle =     Math.PI / 2; }
 		// if(grid.d === 0) { angle = 3 * Math.PI / 2; } else

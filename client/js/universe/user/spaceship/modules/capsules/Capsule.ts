@@ -18,7 +18,15 @@ class Capsule extends Module {
 		down  : false
 	};
 	
-	constructor(world, owner, spaceship, id, position, meta, angle) {
+	constructor(
+		world : Matter.World,
+		owner : string,
+		spaceship : string,
+		id : string,
+		position : { x : number, y : number, d : number },
+		meta : { main : boolean, level : string, interval : string, size : number },
+		angle : number
+	) {
 		super(world, owner, spaceship, id, position, meta, angle);
 		
 		// this is necessary to avoid values like `1` or `"tom"` to get through
@@ -98,7 +106,15 @@ class Capsule extends Module {
 class Q1 extends Capsule {
 	category = "Q1";
 	
-	constructor(world, owner, spaceship, id, position, meta, angle) {
+	constructor(
+		world : Matter.World,
+		owner : string,
+		spaceship : string,
+		id : string,
+		position : { x : number, y : number, d : number },
+		meta : { main : boolean, level : string, interval : string, size : number },
+		angle : number
+	) {
 		super(world, owner, spaceship, id, position, meta, angle);
 	}
 	
