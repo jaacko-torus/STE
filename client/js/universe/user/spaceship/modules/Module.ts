@@ -3,75 +3,99 @@ import Matter from "matter-js";
 import universe from "../../../universe.js";
 
 import { map_set } from "../../../../util/util.js";
+import Spaceship from "../Spaceship.js";
+import User from "../../User.js";
 
-
+interface IModuleConstructorParameters {
+	world : Matter.World,
+	owner : string,
+	spaceship : string,
+	id : string,
+	position : { x : number, y : number, d : number },
+	meta : { level : string, interval : string, size : number },
+	angle : number
+}
 
 class Module {
-	owner = "";
-	spaceship = "";
+	owner : string = "";
+	spaceship : string = "";
 	
-	category;
-	class = "regular";
-	code = "";
+	category : string;
+	class : string = "regular";
+	code : string = "";
 	// FIXME: should I have some defaults for level and interval as well?
-	level;
-	interval;
+	level : string;
+	interval : string;
 	
-	neighbors = [];
+	neighbors : string[] = [];
 	
-	position = { x: 0, y: 0, d: 0 };
+	position : { x : number, y : number, d: number};
 	
 	color = ["#333333", 0.5];
 	
-	velocity = { x: 0, y: 0 };
+	velocity : { x : number, y : number };
+	torque : number;
 	
-	angle;
-	size;
+	angle : number;
+	// TODO: size should be 1 or 0.5, so maybe use enum?
+	size : number;
 	
-	__id__;
+	__id__ : string;
 	
 	
 	// TODO: make all the properties below
-	Matter : any & Matter.Body = {
+	// HACK: should not be using any right here
+	Matter : any & Matter.Body & {
 		meta: {
-			owner: "",
-			spaceship: undefined,
-			__id__: ""
+			owner: string,
+			spaceship: Spaceship,
+			__id__: string
 		},
-		position: { x: 0, y: 0 },
-		velocity: { x: 0, y: 0 },
-		force: { x: 0, y: 0 },
-		torque: 0,
-		angle: 0
-	};
+		position: { x: number, y: number },
+		velocity: { x: number, y: number },
+		force: { x: number, y: number },
+		torque: number,
+		angle: number
+	} = { };
 	
-	constructor(world, owner, spaceship, id, {x, y, d}, {level, interval, size}, angle = Math.PI / 2) {
-		this.owner = owner ?? "";
-		this.spaceship = spaceship ?? "";
+	// constructor(
+	// 	world : Matter.World,
+	// 	owner : string,
+	// 	spaceship : string,
+	// 	id : string,
+	// 	{ x, y, d } : { x : number, y : number, d : number },
+	// 	{ level, interval, size } : { level : string, interval : string, size : number },
+	// 	angle : number = Math.PI / 2
+	// ) {
+	constructor(
+		params : IModuleConstructorParameters
+	) {
+		this.owner = params.owner ?? "";
+		this.spaceship = params.spaceship ?? "";
 		
-		this.level    = level;
-		this.interval = interval;
+		this.level    = params.meta.level;
+		this.interval = params.meta.interval;
 		
 		// this.position = { x, y };
 		// if ( d === 0 || d === 1 ) { this.position.d = d; }
 		// this.position.d = d;
-		this.position = { x, y, d };
+		this.position = params.position;
 		
-		this.angle = angle;
-		this.size = size;
+		this.angle = params.angle;
+		this.size = params.meta.size;
 		
-		this.__id__ = id ?? x + "," + y;
+		this.__id__ = params.id ?? params.position.x + "," + params.position.y;
 		
 		// add to user's spaceship unless these are not specified
-		if (owner && spaceship) {
+		if (params.owner && params.spaceship) {
 			map_set({
-				map: universe.users.get(owner).spaceships.get(spaceship).modules,
+				map: (<Spaceship>(<User>universe.users.get(params.owner)).spaceships.get(params.spaceship)).modules,
 				key: this.__id__,
 				val: this
 			});
 			
 			// FIXME: not sure what this does?
-			this.Matter = Module.create(world, owner, spaceship, this, size);
+			this.Matter = Module.create(params.world, params.owner, params.spaceship, this, params.meta.size);
 			
 			this.Matter.meta = {
 				owner: this.owner,
@@ -88,7 +112,7 @@ class Module {
 					val: this
 				});
 				
-				this.Matter = Module.create(world, owner, spaceship, this, size);
+				this.Matter = Module.create(params.world, params.owner, params.spaceship, this, params.meta.size);
 			} else {
 				console.error("this module ID is already populated, please shift the coordinates of this module and try again");
 			}
@@ -171,7 +195,7 @@ class Module {
 		// add to user's spaceship unless these are not specified
 		// FIXME: should this be `&&` instead?
 		if (owner || spaceship) {
-			Matter.World.add(universe.users.get(owner).spaceships.get(spaceship).composite, module_body);
+			Matter.World.add((<Spaceship>(<User>universe.users.get(owner)).spaceships.get(spaceship)).composite, module_body);
 		} else {
 			Matter.World.add(world, module_body);
 		}
@@ -222,3 +246,6 @@ class Module {
 }
 
 export default Module;
+export {
+	IModuleConstructorParameters
+}
