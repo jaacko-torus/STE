@@ -165,5 +165,6 @@ class Q1 extends Capsule {
 
 export default Capsule;
 export {
-	Q1
+	Q1,
+	ICapsuleConstructorParameters
 };

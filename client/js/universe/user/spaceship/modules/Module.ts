@@ -27,7 +27,7 @@ class Module {
 	level : string;
 	interval : string;
 	
-	neighbors = [];
+	neighbors : string[] = [];
 	
 	position : { x : number, y : number, d: number};
 	

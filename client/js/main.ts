@@ -21,31 +21,31 @@ import spaceship_presets from "./presets/spaceship_presets.json";
 
 
 let globals : {
-	universe,
-	DEBUG,
+	universe : typeof universe,
+	DEBUG : typeof DEBUG,
 	
-	canvas : p5.Renderer,
-	engine : Matter.Engine,
-	world : Matter.World,
-	runner : Matter.Runner,
+	canvas : undefined | p5.Renderer,
+	engine : undefined | Matter.Engine,
+	world  : undefined | Matter.World,
+	runner : undefined | Matter.Runner,
 	
 	mouse : any,
 	mouse_constraint : any,
 	
-	ss : Spaceship
+	ss : undefined | Spaceship
 } = {
 	universe,
 	DEBUG,
 	
-	canvas: null,
-	engine: null,
-	world: null,
-	runner: null,
+	canvas: undefined,
+	engine: undefined,
+	world: undefined,
+	runner: undefined,
 	
 	mouse: null,
 	mouse_constraint: null,
 	
-	ss: null
+	ss: undefined
 };
 
 new p5((s : p5) => {
@@ -94,7 +94,7 @@ new p5((s : p5) => {
 			]
 		);
 		
-		globals.ss = universe.users.get("jaacko0").spaceships.get("ss0");
+		globals.ss = (<Spaceship>(<User>universe.users.get("jaacko0")).spaceships.get("ss0"));
 		console.log(globals.ss);
 		
 		/* -- mouse controls -- */
@@ -179,7 +179,7 @@ new p5((s : p5) => {
 		// let counter = 0;
 		Matter.Events.on(globals.engine, "beforeUpdate", (e) => { // update loop, 60fps, 60 counter = 1sec
 			// counter += 1;
-			globals.ss.update();
+			(globals.ss as Spaceship).update();
 			for (let module of universe.modules.values()) {
 				module.update();
 			}

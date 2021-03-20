@@ -7,6 +7,7 @@ import { datGUI_builder } from "./util/dat.gui.util.js";
 
 import universe from "./universe/universe.js";
 import { load, reset } from "./universe/user/spaceship/Spaceship.js";
+import User from "./universe/user/User.js";
 
 function interface_script(world, Runner, runner) {
 	$(() => {
@@ -74,7 +75,7 @@ have fun :P
 			);
 			
 			console.log(new_ship_JSON);
-			console.log(universe.users.get("jaacko0").spaceships.get("ss0"));
+			console.log((<User>universe.users.get("jaacko0")).spaceships.get("ss0"));
 			// Runner.stop(runner); // TODO: add reset button, for now, just comment or uncomment this
 		});
 		

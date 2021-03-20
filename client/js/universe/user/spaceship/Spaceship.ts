@@ -5,14 +5,21 @@ import universe from "../../universe.js";
 import Module, { IModuleConstructorParameters } from "./modules/Module.js";
 
 import { T1 } from "./modules/structs/Struct.js";
-import Capsule, { Q1 } from "./modules/capsules/Capsule.js";
+import Capsule, { ICapsuleConstructorParameters, Q1 } from "./modules/capsules/Capsule.js";
 import { R3 } from "./modules/thrusters/Thrusters.js";
 
 import { map_set } from "../../../util/util.js";
+import User from "../User.js";
+
+type DOrientation = 0 | 1 | 2 | 3 | 4 | 5;
+type TriCoord = [number, number, number];
+type Grid = { d: DOrientation };
+type SpaceshipModuleConfigurationOptions = [string, { main? : boolean, grid? : Grid }?];
+type SpaceshipModuleConfiguration = [...TriCoord, SpaceshipModuleConfigurationOptions][];
 
 class Spaceship {
 	owner : string;
-	main : string = undefined;
+	main : string;
 	
 	position : { x: number, y: number };
 	
@@ -20,7 +27,7 @@ class Spaceship {
 	
 	capsules : Map<string, Capsule> = new Map();
 	modules : Map<string, Module> = new Map();
-	constraints = new Map();
+	constraints = new Map<string, Matter.Constraint>();
 	
 	composite;
 	
@@ -51,7 +58,7 @@ class Spaceship {
 		
 		// FIXME: this map setting should maybe be its own function
 		map_set({
-			map: universe.users.get(owner).spaceships,
+			map: (<User>universe.users.get(owner)).spaceships,
 			key: id,
 			val: this
 		});
@@ -202,14 +209,16 @@ class Spaceship {
 		}
 		
 		this.constraints.set(a.body + "|" + b.body, Matter.Constraint.create({
-			bodyA: this.modules.get(a.body).Matter, pointA: { x: a.x, y: a.y },
-			bodyB: this.modules.get(b.body).Matter, pointB: { x: b.x, y: b.y },
+			bodyA: (<Module>this.modules.get(a.body)).Matter, pointA: { x: a.x, y: a.y },
+			bodyB: (<Module>this.modules.get(b.body)).Matter, pointB: { x: b.x, y: b.y },
 			
 			damping: 0,
 			stiffness: 1
 		}));
 		
-		this.constraints.get(a.body + "|" + b.body).meta = { owner, spaceship };
+		type CustomMatterConstraint = Matter.Constraint & { meta : { owner : string, spaceship : string } };
+		
+		(<CustomMatterConstraint>this.constraints.get(a.body + "|" + b.body)).meta = { owner, spaceship };
 		
 		if (d === 0) {
 			if (k === 0 && o === -1) { a.x =  constraints[0].x; a.y =  constraints[0].y; b.x = -constraints[1].x; b.y = -constraints[1].y; }
@@ -251,23 +260,26 @@ class Spaceship {
 		}
 		
 		this.constraints.set(b.body + "|" + a.body, Matter.Constraint.create({
-			bodyA: this.modules.get(a.body).Matter, pointA: { x: a.x, y: a.y },
-			bodyB: this.modules.get(b.body).Matter, pointB: { x: b.x, y: b.y },
+			bodyA: (<Module>this.modules.get(a.body)).Matter, pointA: { x: a.x, y: a.y },
+			bodyB: (<Module>this.modules.get(b.body)).Matter, pointB: { x: b.x, y: b.y },
 			
 			damping: 0,
 			stiffness: 1
 		}));
 		
-		this.constraints.get(b.body + "|" + a.body).meta = { owner, spaceship };
+		(<CustomMatterConstraint>this.constraints.get(b.body + "|" + a.body)).meta = { owner, spaceship };
 		
 		return { a: a.body, b: b.body };
 	}
 	
 	// TODO: get a better name like `new_module_from_category`
 	// add_by_type(world, owner, spaceship, id, category, {x, y, d}, {level, interval, size, main}, angle) {
-	add_by_type(module_constructor_parameters : IModuleConstructorParameters & { category : string }) {
+	add_by_type(
+		category : string,
+		module_constructor_parameters : IModuleConstructorParameters | ICapsuleConstructorParameters
+	) : void {
 		// FIXME: maybe use a hash for legibility?
-		switch (module_constructor_parameters.category) {
+		switch (category) {
 			
 			case "Q1": // capsules
 				new Q1(module_constructor_parameters);
@@ -287,7 +299,7 @@ class Spaceship {
 	add_modules(world, owner, spaceship, grid, modules, position) {
 		let size, level, interval, main;
 		
-		let coord_list = [];
+		let coord_list : { x : number, y : number }[] = [];
 		
 		for(let i = 0; i < modules.length; i++) {
 			// fourth item in every module indicates it's category, remove it and set `category` to it
@@ -328,12 +340,11 @@ class Spaceship {
 			// TODO: should the 50 below be hard coded? I was thinking about using that number as zoom, but thats not necesary bc of p5
 			coords = Spaceship.scale_coords(coords, 50);
 			
-			this.add_by_type({
+			this.add_by_type(category, {
 				world,
 				owner,
 				spaceship,
 				id,
-				category,
 				position: { x: coords.x, y: coords.y, d: coords.d },
 				meta: { level, interval, size, main },
 				angle: coords.angle
@@ -348,8 +359,8 @@ class Spaceship {
 		// TODO: make check to see if there are any errors in `add_by_type` and `add_constraints` and return bool
 	}
 	
-	add_constraints(world, owner, spaceship, modules, dir, size) {
-		let list = [];
+	add_constraints(world, owner, spaceship, modules : TriCoord[], dir, size) {
+		let list : TriCoord[][] = [];
 		
 		//create three ordered lists ordered by xy, yz, zx
 		for(let i = 0; i < 3; i++) {
@@ -368,8 +379,8 @@ class Spaceship {
 							// then the two modules are adjacent and should have a constraint
 							this.add_constraint(world, owner, spaceship, a, b, k, dir, size);
 							// add a neighbor
-							this.modules.get(a.toString()).neighbors.push(b.toString());
-							this.modules.get(b.toString()).neighbors.push(a.toString());
+							(<Module>this.modules.get(a.toString())).neighbors.push(b.toString());
+							(<Module>this.modules.get(b.toString())).neighbors.push(a.toString());
 							
 							// FIXME: idk what's up with below comment
 							// console.log([a.toString(), ...this.modules.get(a.toString()).meta.neighbors]);
@@ -524,7 +535,7 @@ class Spaceship {
 			}
 		}
 		
-		universe.users.get(owner).spaceships.get(spaceship).add_modules(
+		(<Spaceship>(<User>universe.users.get(owner)).spaceships.get(spaceship)).add_modules(
 			world,
 			owner,
 			spaceship,
@@ -532,38 +543,37 @@ class Spaceship {
 			grid,
 			
 			modules,
-			universe.users.get(owner).spaceships.get(spaceship).position
+			(<Spaceship>(<User>universe.users.get(owner)).spaceships.get(spaceship)).position
 		);
 	}
 	
 	static reset(world, owner, spaceship) {
 		// clear bodies
-		Matter.Composite.clear(universe.users.get(owner).spaceships.get(spaceship).composite, false, true);
+		Matter.Composite.clear((<Spaceship>(<User>universe.users.get(owner)).spaceships.get(spaceship)).composite, false, true);
 		
 		// clear virtual bodies
-		universe.users.get(owner).spaceships.get(spaceship).modules.clear();
-		universe.users.get(owner).spaceships.get(spaceship).capsules.clear();
-		universe.users.get(owner).spaceships.get(spaceship).constraints.clear();
+		(<Spaceship>(<User>universe.users.get(owner)).spaceships.get(spaceship)).modules.clear();
+		(<Spaceship>(<User>universe.users.get(owner)).spaceships.get(spaceship)).capsules.clear();
+		(<Spaceship>(<User>universe.users.get(owner)).spaceships.get(spaceship)).constraints.clear();
 	}
 	
 	static remove_module(world, owner, spaceship, id) {
-		let module = universe.users.get(owner).spaceships.get(spaceship).modules.get(id);
-		let MatterModule = universe.users.get(owner).spaceships.get(spaceship).modules.get(id).Matter;
+		let module = (<Module>(<Spaceship>(<User>universe.users.get(owner)).spaceships.get(spaceship)).modules.get(id));
+		let MatterModule = module.Matter;
 		
 		// remove body
 		Matter.Composite.remove(
-			universe.users.get(owner).spaceships.get(spaceship).composite,
+			(<Spaceship>(<User>universe.users.get(owner)).spaceships.get(spaceship)).composite,
 			MatterModule,
 			true
 		);
 		
-		universe.users.get(owner).spaceships.get(spaceship).add_by_type({
+		(<Spaceship>(<User>universe.users.get(owner)).spaceships.get(spaceship)).add_by_type(module.category, {
 		// world, owner, spaceship, id, category, {x, y, d}, {level, interval, size, main}, angle
 			world,
 			owner: "",
 			spaceship: "",
 			id: "",
-			category: module.category,
 			position: { x: module.position.x, y: module.position.y, d: -1 },
 			meta: { level: module.level, interval: module.interval, size: module.size },
 			angle: module.angle
@@ -571,20 +581,20 @@ class Spaceship {
 		
 		// delete virtual body
 		// TODO: I don't like this approach, but it's what I could come up with at the moment, figure something out later
-		universe.users.get(owner).spaceships.get(spaceship).modules.delete(id);
-		universe.users.get(owner).spaceships.get(spaceship).capsules.delete(id);
+		(<Spaceship>(<User>universe.users.get(owner)).spaceships.get(spaceship)).modules.delete(id);
+		(<Spaceship>(<User>universe.users.get(owner)).spaceships.get(spaceship)).capsules.delete(id);
 		
 		Spaceship.remove_constraints(owner, spaceship, id);
 	}
 	
 	static erase_module(world, owner, spaceship, id) {
 		
-		let module = universe.users.get(owner).spaceships.get(spaceship).modules.get(id);
-		let matter_module = universe.users.get(owner).spaceships.get(spaceship).modules.get(id).Matter;
+		let module = (<Module>(<Spaceship>(<User>universe.users.get(owner)).spaceships.get(spaceship)).modules.get(id));
+		let matter_module = module.Matter;
 		
 		// remove body
 		Matter.Composite.remove(
-			universe.users.get(owner).spaceships.get(spaceship).composite,
+			(<Spaceship>(<User>universe.users.get(owner)).spaceships.get(spaceship)).composite,
 			matter_module,
 			true
 		);
@@ -592,8 +602,8 @@ class Spaceship {
 		// delete virtual body
 		// TODO: I don't like this approach, but it's what I could come up with at the moment, figure something out later
 		// I don't know what the problem was here and in static remove_module
-		universe.users.get(owner).spaceships.get(spaceship).modules.delete(id);
-		universe.users.get(owner).spaceships.get(spaceship).capsules.delete(id);
+		(<Spaceship>(<User>universe.users.get(owner)).spaceships.get(spaceship)).modules.delete(id);
+		(<Spaceship>(<User>universe.users.get(owner)).spaceships.get(spaceship)).capsules.delete(id);
 		
 		Spaceship.remove_constraints(owner, spaceship, id);
 	}
@@ -602,7 +612,7 @@ class Spaceship {
 		// find modules attached to body
 		let constraints = []
 		
-		for (let [id, contraint] of universe.users.get(owner).spaceships.get(spaceship).constraints) {
+		for (let [id, contraint] of (<Spaceship>(<User>universe.users.get(owner)).spaceships.get(spaceship)).constraints) {
 			if (id.includes(module_id)) { Spaceship.remove_constraint(owner, spaceship, id); /*constraints.push(id);*/ }
 		}
 	}
@@ -610,13 +620,13 @@ class Spaceship {
 	static remove_constraint(owner, spaceship, id) {
 		// remove from MatterJS
 		Matter.Composite.remove(
-			universe.users.get(owner).spaceships.get(spaceship).composite,
-			universe.users.get(owner).spaceships.get(spaceship).constraints.get(id),
+			(<Spaceship>(<User>universe.users.get(owner)).spaceships.get(spaceship)).composite,
+			(<Matter.Constraint>(<Spaceship>(<User>universe.users.get(owner)).spaceships.get(spaceship)).constraints.get(id)),
 			true
 		);
 		
 		// TODO: remove from virtual space
-		universe.users.get(owner).spaceships.get(spaceship).constraints.delete(id);
+		(<Spaceship>(<User>universe.users.get(owner)).spaceships.get(spaceship)).constraints.delete(id);
 	}
 }
 
