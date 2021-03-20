@@ -6,7 +6,7 @@ import { interface_script } from "./interface.js";
 
 import universe from "./universe/universe.js";
 import User from "./universe/user/User.js";
-import Spaceship from "./universe/user/spaceship/Spaceship.js";
+import Spaceship, { SpaceshipModuleConfiguration } from "./universe/user/spaceship/Spaceship.js";
 import Module from "./universe/user/spaceship/modules/Module.js";
 
 import config from "./util/config.js";
@@ -17,8 +17,12 @@ import { hexAlpha } from "./util/p5.util.js";
 // presets
 // import spaceship_presets from "./presets/spaceship_presets.json";
 // import * as spaceship_presets from "./presets/spaceship_presets.json";
-import spaceship_presets from "./presets/spaceship_presets.json";
 
+/* NOTE: Typescript is giving me a whole 'nother type for this,
+* so I'm bypassing it typechecking and telling the compiler that everything is fine by casting to `any`
+*/
+import _spaceship_presets from "./presets/spaceship_presets.json";
+const spaceship_presets = _spaceship_presets as any as {[key : string]: SpaceshipModuleConfiguration};
 
 let globals : {
 	universe : typeof universe,

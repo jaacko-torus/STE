@@ -11,11 +11,20 @@ import { R3 } from "./modules/thrusters/Thrusters.js";
 import { map_set } from "../../../util/util.js";
 import User from "../User.js";
 
-type DOrientation = 0 | 1 | 2 | 3 | 4 | 5;
 type TriCoord = [number, number, number];
+type DOrientation = 0 | 1 | 2 | 3 | 4 | 5;
 type Grid = { d: DOrientation };
-type SpaceshipModuleConfigurationOptions = [string, { main? : boolean, grid? : Grid }?];
-type SpaceshipModuleConfiguration = [...TriCoord, SpaceshipModuleConfigurationOptions][];
+type ModuleSize = 0.5 | 1;
+type SpaceshipModuleConfigurationModuleCategory = string;
+type SpaceshipModuleConfigurationModuleMeta = {
+	main? : boolean,
+	grid? : Grid,
+	size? : ModuleSize,
+	level? : string,
+	interval? : string
+};
+type SpaceshipModuleConfigurationModuleOptions = [SpaceshipModuleConfigurationModuleCategory, SpaceshipModuleConfigurationModuleMeta?];
+type SpaceshipModuleConfiguration = [...TriCoord, SpaceshipModuleConfigurationModuleOptions][];
 
 class Spaceship {
 	owner : string;
@@ -39,7 +48,7 @@ class Spaceship {
 		id : string,
 		position : { x : number, y : number },
 		// TODO: make a proper type for modules
-		modules : any[] = [],
+		modules : SpaceshipModuleConfiguration = [],
 		angle : number = 3 * Math.PI / 2
 	) {
 		// if(position.d === 0) { angle = 3 * Math.PI / 2; } else
@@ -57,11 +66,7 @@ class Spaceship {
 		this.composite = Matter.Composite.create();
 		
 		// FIXME: this map setting should maybe be its own function
-		map_set({
-			map: (<User>universe.users.get(owner)).spaceships,
-			key: id,
-			val: this
-		});
+		(<User>universe.users.get(owner)).spaceships.set(id, this);
 		
 		// add modules once spaceship is virtualy in existance
 		Spaceship.load(world, this.owner, id, modules);
@@ -72,26 +77,27 @@ class Spaceship {
 	}
 	
 	// it's going to loop through every capsule and get instructions
-	update() {
+	update() : void {
 		for (let capsule of this.capsules.values()) {
 			capsule.update();
 		}
 	}
 	
-	get centroid() {
+	get centroid() : { x : number, y : number } {
 		/* TODO:
-			get relative model position on every load event,
-			compute centroid
-			scale centroid by inverse of scale
-			compute relation by main capsule
-		*/
+		 * - get relative model position on every load event,
+		 * - compute centroid
+		 * - scale centroid by inverse of scale
+		 * - compute relation by main capsule
+		 */
 		// TODO: this method is easy but not very efficient
 		let x_pos_total = 0;
 		let y_pos_total = 0;
 		
-		// FIXME: I could do it this way since it's more efficient
-		// but the centroid should only be calculated every time a module is added or subtracted only
-		// as such I think it should be fine to make it slower but more readable
+		/* FIXME: I could do it this way since it's more efficient
+		 * but the centroid should only be calculated every time a module is added or subtracted only
+		 * as such I think it should be fine to make it slower but more readable
+		 */
 		for (let module of this.modules.values()) {
 			x_pos_total += module.position.x;
 			y_pos_total += module.position.y;
@@ -109,9 +115,10 @@ class Spaceship {
 		// TODO: find a better name, and maybe use a map?
 		let module_list = { };
 		
-		// FIXME: don't know what `F` and `r` are
-		// due to them being use quite extensively inside later on I think leaving them named as they are should be fine
-		// But a NOTE should be added to explain what each of them mean
+		/* FIXME: don't know what `F` and `r` are
+		 * due to them being use quite extensively inside later on I think leaving them named as they are should be fine
+		 * But a NOTE should be added to explain what each of them mean
+		 */
 		let F = { x: 0, y: 0 };
 		let r = { x: 0, y: 0 };
 		
@@ -153,11 +160,18 @@ class Spaceship {
 	
 	// TODO: idk what `a`, `b`, `k`, or `d` represent, they are parameters, use better names
 	// TODO: rewrite this whole thing so that it makes more sense
-	constraint_management(owner, spaceship, a, b, k, d, size) {
+	constraint_management(
+		owner : string,
+		spaceship : string,
+		a, b,
+		k,
+		d,
+		size : ModuleSize
+	) {
 		// array containing the coords for all modules
 		let constraints;
-		if( size === 0.5 ) { constraints = Module.h_constraints; }
-		if( size === 1   ) { constraints = Module.w_constraints; }
+		if (size === 0.5) { constraints = Module.h_constraints; }
+		if (size === 1  ) { constraints = Module.w_constraints; }
 		
 		let i = (k + 1) % 3;
 		let j = (k + 2) % 3;
@@ -259,13 +273,16 @@ class Spaceship {
 			// if(k === 2 && o ===  1) { b.x = 0; b.y = 0; }
 		}
 		
-		this.constraints.set(b.body + "|" + a.body, Matter.Constraint.create({
-			bodyA: (<Module>this.modules.get(a.body)).Matter, pointA: { x: a.x, y: a.y },
-			bodyB: (<Module>this.modules.get(b.body)).Matter, pointB: { x: b.x, y: b.y },
-			
-			damping: 0,
-			stiffness: 1
-		}));
+		this.constraints.set(
+			b.body + "|" + a.body,
+			Matter.Constraint.create({
+				bodyA: (<Module>this.modules.get(a.body)).Matter, pointA: { x: a.x, y: a.y },
+				bodyB: (<Module>this.modules.get(b.body)).Matter, pointB: { x: b.x, y: b.y },
+				
+				damping: 0,
+				stiffness: 1
+			})
+		);
 		
 		(<CustomMatterConstraint>this.constraints.get(b.body + "|" + a.body)).meta = { owner, spaceship };
 		
@@ -296,16 +313,16 @@ class Spaceship {
 		}
 	}
 	
-	add_modules(world, owner, spaceship, grid, modules, position) {
+	add_modules(world, owner, spaceship, grid, modules, position) : void {
 		let size, level, interval, main;
 		
 		let coord_list : { x : number, y : number }[] = [];
 		
-		for(let i = 0; i < modules.length; i++) {
+		for (let i = 0; i < modules.length; i++) {
 			// fourth item in every module indicates it's category, remove it and set `category` to it
 			// BUG: `.pop()` doesn't take any arguments
 			// TODO: rewrite this body
-			let props = modules[i].pop(3);
+			let props = modules[i].pop();
 			let category = props[0];
 			
 			if (!props[1]) {
@@ -359,7 +376,8 @@ class Spaceship {
 		// TODO: make check to see if there are any errors in `add_by_type` and `add_constraints` and return bool
 	}
 	
-	add_constraints(world, owner, spaceship, modules : TriCoord[], dir, size) {
+	add_constraints(
+		world : Matter.World, owner, spaceship, modules : TriCoord[], dir, size) {
 		let list : TriCoord[][] = [];
 		
 		//create three ordered lists ordered by xy, yz, zx
@@ -635,7 +653,19 @@ let load =  Spaceship.load;
 let reset = Spaceship.reset;
 
 export default Spaceship;
+
 export {
 	load,
 	reset
 };
+
+export {
+	TriCoord,
+	DOrientation,
+	Grid,
+	ModuleSize,
+	SpaceshipModuleConfigurationModuleCategory,
+	SpaceshipModuleConfigurationModuleMeta,
+	SpaceshipModuleConfigurationModuleOptions,
+	SpaceshipModuleConfiguration
+}
