@@ -11,6 +11,7 @@ import { R3 } from "./modules/thrusters/Thrusters.js";
 import { map_set } from "../../../util/util.js";
 import User from "../User.js";
 
+type Position = { x: number, y: number };
 type TriCoord = [number, number, number];
 type DOrientation = 0 | 1 | 2 | 3 | 4 | 5;
 type Grid = { d: DOrientation };
@@ -483,7 +484,11 @@ class Spaceship {
 		// }
 	}
 	
-	static coords(origin, sqr_coords, size) {
+	static coords(
+		origin,
+		sqr_coords,
+		size : ModuleSize
+	) : Position & Grid & { angle : number } {
 		// let height;
 		// if( size = 0.5 ) { size = h_size; height = h_height; }
 		// if( size = 1   ) { size = w_size; height = w_height; }
@@ -524,7 +529,10 @@ class Spaceship {
 		return { x, y, d: sqr_coords.d, angle };
 	}
 	
-	static scale_coords(coords, scale) {
+	static scale_coords(
+		coords : Position & Grid & { angle : number },
+		scale : number
+	) : Position & Grid & { angle : number } {
 		// TODO: translate figure after scale to origin of main capsule
 		return {
 			x: coords.x * scale,
@@ -534,7 +542,12 @@ class Spaceship {
 		}
 	}
 	
-	static load(world, owner, spaceship, modules) {
+	static load(
+		world : Matter.World,
+		owner : string,
+		spaceship : string,
+		modules : SpaceshipModuleConfiguration
+	) : void {
 	// static load(world, owner, spaceship, d, modules) {
 		// let angle;
 		// if(d === 0) { angle = 3 * Math.PI / 2; } else
@@ -544,12 +557,13 @@ class Spaceship {
 		// universe.users.get(owner).spaceships.get(spaceship).grid.d = d
 		
 		// add modules once spaceship is virtualy in existance
-		let grid = {};
+		let grid : Grid = { d: 0 };
 		
 		for (let i = 0; i < modules.length; i += 1) {
 			// FIXME: idk where these magical idexes are coming from
-			if (modules[i][3][1] && modules[i][3][1].main) {
-				grid = modules[i][3][1].grid;
+			if (modules[i][3][1]?.main) {
+				// NOTE: if condition is true then `.grid instanceof Grid === true`
+				grid = modules[i][3][1]?.grid as Grid;
 			}
 		}
 		
@@ -565,7 +579,11 @@ class Spaceship {
 		);
 	}
 	
-	static reset(world, owner, spaceship) {
+	static reset(
+		world : Matter.World,
+		owner : string,
+		spaceship : string
+	) : void {
 		// clear bodies
 		Matter.Composite.clear((<Spaceship>(<User>universe.users.get(owner)).spaceships.get(spaceship)).composite, false, true);
 		
@@ -575,7 +593,12 @@ class Spaceship {
 		(<Spaceship>(<User>universe.users.get(owner)).spaceships.get(spaceship)).constraints.clear();
 	}
 	
-	static remove_module(world, owner, spaceship, id) {
+	static remove_module(
+		world : Matter.World,
+		owner : string,
+		spaceship : string,
+		id : string
+	) : void {
 		let module = (<Module>(<Spaceship>(<User>universe.users.get(owner)).spaceships.get(spaceship)).modules.get(id));
 		let MatterModule = module.Matter;
 		
@@ -605,7 +628,12 @@ class Spaceship {
 		Spaceship.remove_constraints(owner, spaceship, id);
 	}
 	
-	static erase_module(world, owner, spaceship, id) {
+	static erase_module(
+		world : Matter.World,
+		owner : string,
+		spaceship : string,
+		id : string
+	) : void {
 		
 		let module = (<Module>(<Spaceship>(<User>universe.users.get(owner)).spaceships.get(spaceship)).modules.get(id));
 		let matter_module = module.Matter;
@@ -626,16 +654,27 @@ class Spaceship {
 		Spaceship.remove_constraints(owner, spaceship, id);
 	}
 	
-	static remove_constraints(owner, spaceship, module_id) {
+	static remove_constraints(
+		owner : string,
+		spaceship : string,
+		module_id : string
+	) : void {
 		// find modules attached to body
 		let constraints = []
 		
 		for (let [id, contraint] of (<Spaceship>(<User>universe.users.get(owner)).spaceships.get(spaceship)).constraints) {
-			if (id.includes(module_id)) { Spaceship.remove_constraint(owner, spaceship, id); /*constraints.push(id);*/ }
+			if (id.includes(module_id)) {
+				Spaceship.remove_constraint(owner, spaceship, id);
+				/*constraints.push(id);*/
+			}
 		}
 	}
 	
-	static remove_constraint(owner, spaceship, id) {
+	static remove_constraint(
+		owner : string,
+		spaceship : string,
+		id : string
+	) : void {
 		// remove from MatterJS
 		Matter.Composite.remove(
 			(<Spaceship>(<User>universe.users.get(owner)).spaceships.get(spaceship)).composite,
@@ -660,6 +699,7 @@ export {
 };
 
 export {
+	Position,
 	TriCoord,
 	DOrientation,
 	Grid,
